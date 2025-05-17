@@ -1,0 +1,13 @@
+Add paper animation of a brain and eyes looking left and right, and a dude on a diving board, 
+as he dives into her brain, shown through scrolling. From left and right we see darkness crawl in. Or how light gets lesser the further you dive. 
+
+He turns his flashlight on which reveals the puzzle.
+You can play songs that will be pre loaded, lyrics showing up behind the puzzle like how you see in Instagram. 
+
+Songs and corresponding lyrics will be stored beforehand, user can choose to skip or fast-forward a song. 
+
+As soon as user is just about to solve the puzzle, on the puzzle grid display a message by flipping the tiles. Change background to black and lyrics to red.
+
+Upon clicking exit button, flash "No way out, Abhimanyu"
+
+Add sound effects too, first it is peachy sunshine birds chirping feel good sounds. Keep it getting darker as and how he dives let one particular song start as user starts to play the game.

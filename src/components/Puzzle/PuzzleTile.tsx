@@ -29,35 +29,42 @@ const PuzzleTile: React.FC<PuzzleTileProps> = React.memo(({
   useEffect(() => {
     const element = tileRef.current;
     if (!element) return;
-
+    
+    // Force reflow before transition
+    element.style.transform = 'none';
+    element.offsetHeight; // Force reflow
+    element.style.transform = `translate(${currentCol * TILE_SIZE}px, ${currentRow * TILE_SIZE}px)`;
+    
     const handler = (e: TransitionEvent) => {
       if (e.propertyName === 'transform') {
-        onTransitionEnd();
+        requestAnimationFrame(() => {
+          onTransitionEnd();
+        });
       }
     };
 
     element.addEventListener('transitionend', handler);
-    return () => {
-      element.removeEventListener('transitionend', handler);
-    };
-  }, [onTransitionEnd]);
+    return () => element.removeEventListener('transitionend', handler);
+  }, [currentCol, currentRow, onTransitionEnd]);
 
-  const transform = `translate(${currentCol * TILE_SIZE}px, ${currentRow * TILE_SIZE}px)`;
-  
+  // Force browser to handle each new transform as a transition
+  const transformStyle = `translate(${currentCol * TILE_SIZE}px, ${currentRow * TILE_SIZE}px)`;
+
   const style: React.CSSProperties = {
     position: 'absolute',
     width: `${TILE_SIZE}px`,
     height: `${TILE_SIZE}px`,
     top: 0,
     left: 0,
-    transform,
+    transform: transformStyle,
     transition: 'transform 300ms cubic-bezier(0.4, 0, 0.2, 1)',
     cursor: tile.isEmpty ? 'default' : 'pointer',
     userSelect: 'none',
     backfaceVisibility: 'hidden',
     WebkitBackfaceVisibility: 'hidden',
     zIndex: tile.isEmpty ? 0 : 1,
-    willChange: 'transform'
+    willChange: 'transform',
+    contain: 'layout'  // Optimize rendering
   };
 
   if (tile.isEmpty) {
@@ -66,6 +73,7 @@ const PuzzleTile: React.FC<PuzzleTileProps> = React.memo(({
       style={style}
       data-tile-id={tile.id}
       data-empty="true"
+      data-position={tile.currentIndex}
     />;
   }
 
@@ -79,6 +87,7 @@ const PuzzleTile: React.FC<PuzzleTileProps> = React.memo(({
       tabIndex={0}
       aria-label={`Tile ${tile.id + 1}`}
       data-tile-id={tile.id}
+      data-position={tile.currentIndex}
     >
       <div
         style={{
