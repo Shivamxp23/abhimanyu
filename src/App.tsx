@@ -9,7 +9,7 @@ function App() {
         <p className="text-gray-300">Solve the 3x3 puzzle by arranging the tiles in order</p>
       </header>
       
-      <main className="w-full max-w-md">
+      <main className="w-full max-w-2xl">
         <PuzzleGame />
       </main>
       

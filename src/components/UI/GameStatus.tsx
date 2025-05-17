@@ -28,13 +28,16 @@ const GameStatus: React.FC<GameStatusProps> = ({ moves, elapsedTime, isCompleted
         <span>{formatTime(elapsedTime)}</span>
       </div>
       {solution.isShowingSolution && (
-        <div className="mt-2 text-center">
-          <div className="bg-[#000080] text-white font-bold py-1 mb-1">
-            Solving Puzzle...
+        <div className="mt-2">
+          <div className="bg-[#000080] text-white font-bold py-1 mb-1 text-center">
+            Solution Steps
           </div>
-          <div className="text-xs">
-            Step {solution.currentStep + 1} of {solution.moves.length}:{' '}
-            {solution.path[solution.currentStep]?.toUpperCase()}
+          <div className="bg-white p-2 max-h-48 overflow-y-auto">
+            {solution.path.map((step, index) => (
+              <div key={index} className={`text-xs mb-1 ${index === solution.currentStep ? 'bg-blue-100 font-bold' : ''}`}>
+                {index + 1}. Move tile {solution.moves[index]} {step.toLowerCase()}
+              </div>
+            ))}
           </div>
         </div>
       )}

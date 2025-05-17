@@ -3,6 +3,22 @@ import { PUZZLE_CONSTANTS, getAdjacentIndices } from './puzzleUtils';
 
 const { GRID_SIZE } = PUZZLE_CONSTANTS;
 
+// Export helper to get tile that should move based on empty position and direction
+export const getTileToMove = (emptyIndex: number, direction: string): number => {
+  switch (direction) {
+    case 'UP': // Need to move tile from below up
+      return emptyIndex + GRID_SIZE;
+    case 'DOWN': // Need to move tile from above down
+      return emptyIndex - GRID_SIZE;
+    case 'LEFT': // Need to move tile from right left
+      return emptyIndex + 1;
+    case 'RIGHT': // Need to move tile from left right
+      return emptyIndex - 1;
+    default:
+      return -1;
+  }
+};
+
 interface PuzzleState {
   tiles: Tile[];
   emptyIndex: number;
@@ -63,17 +79,18 @@ const getStateKey = (tiles: Tile[]): string => {
   return tiles.map(tile => tile.currentIndex).join(',');
 };
 
-// Get move direction for path tracking
+// Get move direction based on tile positions
 const getMoveDirection = (fromIndex: number, toIndex: number): string => {
   const fromRow = Math.floor(fromIndex / GRID_SIZE);
   const fromCol = fromIndex % GRID_SIZE;
   const toRow = Math.floor(toIndex / GRID_SIZE);
   const toCol = toIndex % GRID_SIZE;
 
-  if (fromRow > toRow) return 'up';
-  if (fromRow < toRow) return 'down';
-  if (fromCol > toCol) return 'left';
-  if (fromCol < toCol) return 'right';
+  // Direction indicates which way the tile needs to move
+  if (fromRow > toRow) return 'UP';
+  if (fromRow < toRow) return 'DOWN';
+  if (fromCol > toCol) return 'LEFT';
+  if (fromCol < toCol) return 'RIGHT';
   return '';
 };
 
@@ -94,7 +111,8 @@ const createNewState = (
     return tile;
   });
 
-  const direction = getMoveDirection(emptyIndex, tileIndex);
+  const direction = getMoveDirection(tileIndex, emptyIndex);
+  console.log(`Move: Tile ${tileIndex} to ${emptyIndex}, Direction: ${direction}`);
   
   return {
     tiles: newTiles,
@@ -107,8 +125,13 @@ const createNewState = (
 };
 
 export const findSolution = (tiles: Tile[]): { moves: number[]; path: string[] } => {
+  console.log('findSolution called with tiles:', tiles);
+  
   const emptyTile = tiles.find(tile => tile.isEmpty);
-  if (!emptyTile) return { moves: [], path: [] };
+  if (!emptyTile) {
+    console.log('No empty tile found!');
+    return { moves: [], path: [] };
+  }
 
   const initialState: PuzzleState = {
     tiles,
@@ -119,6 +142,8 @@ export const findSolution = (tiles: Tile[]): { moves: number[]; path: string[] }
     heuristic: getTotalManhattanDistance(tiles)
   };
 
+  console.log('Initial state:', initialState);
+
   const openSet = new PriorityQueue();
   openSet.enqueue(initialState);
 
@@ -127,10 +152,18 @@ export const findSolution = (tiles: Tile[]): { moves: number[]; path: string[] }
 
   while (openSet.length > 0) {
     const currentState = openSet.dequeue()!;
+    console.log('Processing state:', { 
+      emptyIndex: currentState.emptyIndex,
+      cost: currentState.cost,
+      heuristic: currentState.heuristic
+    });
 
     // Check if puzzle is solved
     if (currentState.heuristic === 0) {
-      console.log('Solution found in', currentState.cost, 'moves');
+      console.log('Solution found:', {
+        moves: currentState.moves,
+        path: currentState.path
+      });
       return { 
         moves: currentState.moves,
         path: currentState.path
@@ -139,6 +172,7 @@ export const findSolution = (tiles: Tile[]): { moves: number[]; path: string[] }
 
     // Get all possible moves from current state
     const adjacentIndices = getAdjacentIndices(currentState.emptyIndex);
+    console.log('Adjacent indices:', adjacentIndices);
 
     for (const tileIndex of adjacentIndices) {
       const newState = createNewState(

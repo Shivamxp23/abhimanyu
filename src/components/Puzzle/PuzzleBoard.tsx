@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Tile } from '../../types/puzzle';
 import PuzzleTile from './PuzzleTile';
 import { PUZZLE_CONSTANTS } from '../../utils/puzzleUtils';
@@ -8,15 +8,29 @@ interface PuzzleBoardProps {
   imageUrl: string;
   isPlaying: boolean;
   onTileClick: (index: number) => void;
+  onTransitionEnd: () => void;
 }
 
 const PuzzleBoard: React.FC<PuzzleBoardProps> = ({ 
   tiles, 
   imageUrl, 
   isPlaying,
-  onTileClick 
+  onTileClick,
+  onTransitionEnd 
 }) => {
   const { GRID_SIZE } = PUZZLE_CONSTANTS;
+  
+  // Prevent clicks during transitions
+  const isTransitioning = useRef(false);
+  const handleTileClick = (index: number) => {
+    if (isTransitioning.current) return;
+    onTileClick(index);
+  };
+
+  const handleTransitionEnd = () => {
+    isTransitioning.current = false;
+    onTransitionEnd();
+  };
   
   return (
     <div 
@@ -41,7 +55,8 @@ const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
           tile={tile}
           imageUrl={imageUrl}
           gridSize={GRID_SIZE}
-          onClick={() => onTileClick(tile.currentIndex)}
+          onClick={() => handleTileClick(tile.currentIndex)}
+          onTransitionEnd={handleTransitionEnd}
         />
       ))}
     </div>

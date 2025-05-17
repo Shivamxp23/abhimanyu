@@ -20,7 +20,8 @@ const PuzzleGame: React.FC = () => {
     resetGame, 
     moveTile,
     showSolution,
-    stopSolution
+    stopSolution,
+    onTransitionEnd
   } = usePuzzle({ imageUrl });
 
   // Initialize with a random image when component mounts
@@ -89,7 +90,11 @@ const PuzzleGame: React.FC = () => {
             </Button>
           ) : (
             <Button
-              onClick={showSolution}
+              onClick={() => {
+                console.log('Solve button clicked');
+                console.log('Current game state:', { isPlaying, isCompleted, tiles });
+                showSolution();
+              }}
               disabled={!isPlaying || isCompleted}
               className="flex-1"
             >
@@ -121,6 +126,7 @@ const PuzzleGame: React.FC = () => {
               imageUrl={imageUrl}
               isPlaying={isPlaying}
               onTileClick={moveTile}
+              onTransitionEnd={onTransitionEnd}
             />
           )}
         </div>
