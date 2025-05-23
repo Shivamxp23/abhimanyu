@@ -26,7 +26,24 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
     "Lost In Time.mp3",
     "Glass Half Full.mp3",
     "Kammo ji.mp3",
-    "Hoke Tetho Door Mai.mp3"
+    "Hoke Tetho Door Mai.mp3",
+    "Kill Bill.mp3",
+    "Aaj Jane Ki Zid Na Karo.mp3",
+    "Marham.mp3",
+    "Broken Man.mp3",
+    "Something About You.mp3",
+    "Unwaan.mp3",
+    "ALL MINE.mp3",
+    "Let Go.mp3",
+    "Hide.mp3",
+    "My Side.mp3",
+    "Hale Dil.mp3",
+    "Maula Mere.mp3",
+    "Nca.mp3",
+    "TOH PHIR AAO.mp3",
+    "Isq Risk.mp3",
+    "Kya Mujhe Pyaar Hai.mp3",
+    "Uska He Banana.mp3"
   ];
 
   const showNowPlayingNotification = (songName: string) => {
