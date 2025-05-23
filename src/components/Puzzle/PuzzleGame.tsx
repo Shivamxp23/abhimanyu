@@ -136,7 +136,6 @@ const PuzzleGame: React.FC = () => {
           moves={moves} 
           elapsedTime={elapsedTime} 
           isCompleted={isCompleted}
-          solution={solution}
         />
       </div>
     </WindowFrame>
