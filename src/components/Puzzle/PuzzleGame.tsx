@@ -48,7 +48,7 @@ const PuzzleGame: React.FC = () => {
   };
 
   return (
-    <WindowFrame title="Image Puzzle" className="mx-auto mt-4" style={{ width: '632px' }}>
+    <WindowFrame title="Kintsugi" className="mx-auto mt-4" style={{ width: '632px' }}>
       <div className="flex flex-col gap-4">
         {/* Game Controls */}
         <div className="flex justify-between items-center gap-2">
