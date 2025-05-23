@@ -27,6 +27,7 @@ function App() {
   const [isIlluminationBroken, setIsIlluminationBroken] = useState(false);
   const [hasShownStartNotification, setHasShownStartNotification] = useState(false);
   const [showRain, setShowRain] = useState(false);
+  const [hasShownAudioNotification, setHasShownAudioNotification] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize and play background audio
@@ -39,6 +40,7 @@ function App() {
     const playAudio = async () => {
       try {
         await audioRef.current?.play();
+        setHasShownAudioNotification(true);
         setNotification({
           show: true,
           message: 'Ambient sounds enabled',
@@ -50,7 +52,6 @@ function App() {
         }, 3000);
       } catch (error) {
         console.log('Audio autoplay failed:', error);
-        // Only show the click notification if autoplay fails
         setNotification({
           show: true,
           message: 'Click anywhere to enable sounds',
@@ -70,7 +71,8 @@ function App() {
         try {
           await audioRef.current.play();
           // Only show the enabled notification if we haven't shown it before
-          if (!notification.show) {
+          if (!hasShownAudioNotification) {
+            setHasShownAudioNotification(true);
             setNotification({
               show: true,
               message: 'Ambient sounds enabled',
@@ -96,7 +98,7 @@ function App() {
       }
       document.removeEventListener('click', enableAudio);
     };
-  }, []);
+  }, [hasShownAudioNotification]);
 
   const toggleMute = () => {
     if (audioRef.current) {
