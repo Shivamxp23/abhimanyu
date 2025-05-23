@@ -50,6 +50,7 @@ function App() {
         }, 3000);
       } catch (error) {
         console.log('Audio autoplay failed:', error);
+        // Only show the click notification if autoplay fails
         setNotification({
           show: true,
           message: 'Click anywhere to enable sounds',
@@ -68,15 +69,18 @@ function App() {
       if (audioRef.current) {
         try {
           await audioRef.current.play();
-          setNotification({
-            show: true,
-            message: 'Ambient sounds enabled',
-            emoji: '🔊'
-          });
-          // Clear notification after 3 seconds
-          setTimeout(() => {
-            setNotification(prev => ({ ...prev, show: false }));
-          }, 3000);
+          // Only show the enabled notification if we haven't shown it before
+          if (!notification.show) {
+            setNotification({
+              show: true,
+              message: 'Ambient sounds enabled',
+              emoji: '🔊'
+            });
+            // Clear notification after 3 seconds
+            setTimeout(() => {
+              setNotification(prev => ({ ...prev, show: false }));
+            }, 3000);
+          }
         } catch (error) {
           console.log('Audio playback failed:', error);
         }
