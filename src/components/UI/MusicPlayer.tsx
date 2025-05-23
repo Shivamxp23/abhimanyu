@@ -53,11 +53,9 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
 
   const playAudio = async (audio: HTMLAudioElement) => {
     try {
-      // Only load if the source has changed
-      if (audio.dataset.lastSrc !== audio.src) {
-        await audio.load();
-        audio.dataset.lastSrc = audio.src;
-      }
+      // Always load the audio when playing
+      await audio.load();
+      audio.dataset.lastSrc = audio.src;
       await audio.play();
       setIsPlaying(true);
       onPlay?.();
@@ -66,14 +64,18 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
     }
   };
 
-  const handleSongEnd = () => {
+  const handleSongEnd = async () => {
     const nextSong = playRandomSong();
     setSongHistory(prev => [...prev, currentSong]);
     setCurrentSong(nextSong);
     if (audioRef.current) {
       audioRef.current.src = `/music/${nextSong}`;
-      playAudio(audioRef.current);
-      showNowPlayingNotification(nextSong);
+      try {
+        await playAudio(audioRef.current);
+        showNowPlayingNotification(nextSong);
+      } catch (err) {
+        console.error('Failed to play next song:', err);
+      }
     }
   };
 
@@ -106,7 +108,9 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
     
     // Resume if it was playing
     if (wasPlaying) {
-      playAudio(audioRef.current);
+      audioRef.current.play().catch(err => {
+        console.error('Failed to resume playback:', err);
+      });
     }
   };
 
