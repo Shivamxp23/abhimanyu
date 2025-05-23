@@ -43,7 +43,7 @@ function App() {
         // Don't show any notification on initial autoplay success
       } catch (error) {
         console.log('Audio autoplay failed:', error);
-        // Always show click notification first
+        // Show click notification
         setNotification({
           show: true,
           message: 'Click anywhere to enable sounds',
@@ -62,16 +62,7 @@ function App() {
       if (audioRef.current) {
         try {
           await audioRef.current.play();
-          // Show enabled notification only after clicking
-          setNotification({
-            show: true,
-            message: 'Ambient sounds enabled',
-            emoji: '🔊'
-          });
-          // Clear notification after 3 seconds
-          setTimeout(() => {
-            setNotification(prev => ({ ...prev, show: false }));
-          }, 3000);
+          // Don't show any notification after clicking
         } catch (error) {
           console.log('Audio playback failed:', error);
         }
