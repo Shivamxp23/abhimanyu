@@ -7,11 +7,14 @@ import Button from '../UI/Button';
 import GameStatus from '../UI/GameStatus';
 import MusicPlayer from '../UI/MusicPlayer';
 import { RefreshCw, Play, RotateCcw, Lightbulb, X } from 'lucide-react';
+import SoundManager from '../../utils/SoundManager';
 
 const PuzzleGame: React.FC = () => {
   const musicPlayerRef = useRef<HTMLAudioElement>(null);
   const [gameStarted, setGameStarted] = React.useState(false);
-  const ambientSoundRef = useRef<HTMLAudioElement | null>(null);
+  const [flickerStarted, setFlickerStarted] = React.useState(false);
+  const [firstTransitionComplete, setFirstTransitionComplete] = React.useState(false);
+  const soundManager = useRef(SoundManager.getInstance());
   const { imageUrl, isLoading, error, fetchRandomImage } = useRandomImage();
   const { 
     tiles, 
@@ -35,16 +38,10 @@ const PuzzleGame: React.FC = () => {
 
   // Initialize ambient sound
   useEffect(() => {
-    ambientSoundRef.current = new Audio('/music/Birds Chirp.mp3');
-    ambientSoundRef.current.loop = true;
-    ambientSoundRef.current.volume = 0.3; // Lower volume for ambient sound
-    ambientSoundRef.current.play().catch(err => console.error('Failed to play ambient sound:', err));
+    soundManager.current.playAmbience('/music/Birds Chirp.mp3');
 
     return () => {
-      if (ambientSoundRef.current) {
-        ambientSoundRef.current.pause();
-        ambientSoundRef.current = null;
-      }
+      soundManager.current.stop();
     };
   }, []);
 
@@ -64,11 +61,18 @@ const PuzzleGame: React.FC = () => {
   const handleNewGame = () => {
     fetchRandomImage();
     resetGame();
+    setFlickerStarted(false);
+    setFirstTransitionComplete(false);
   };
 
   // Handle start game with current image
   const handleStartGame = () => {
     if (imageUrl) {
+      // First disable interactions
+      setFlickerStarted(false);
+      setFirstTransitionComplete(false);
+      
+      // Start the game
       startGame();
       setGameStarted(true);
       
@@ -80,25 +84,24 @@ const PuzzleGame: React.FC = () => {
         }
       }));
 
-      // Fade out ambient sound and start game music
-      if (ambientSoundRef.current) {
-        const fadeOut = setInterval(() => {
-          if (ambientSoundRef.current && ambientSoundRef.current.volume > 0.01) {
-            ambientSoundRef.current.volume -= 0.01;
-          } else {
-            if (ambientSoundRef.current) {
-              ambientSoundRef.current.pause();
-            }
-            clearInterval(fadeOut);
-          }
-        }, 50);
-      }
+      // Crossfade to rain and thunder ambience
+      soundManager.current.playAmbience('/Rain and thunder.mp3');
 
       // Start music
       const audioElement = document.querySelector('audio');
       if (audioElement) {
         audioElement.play().catch(err => console.error('Failed to play audio:', err));
       }
+
+      // Wait for the background transition to complete before enabling interactions
+      // The background transition takes about 2 seconds
+      setTimeout(() => {
+        setFlickerStarted(true);
+        // Wait for the first flicker to complete (additional 2 seconds)
+        setTimeout(() => {
+          setFirstTransitionComplete(true);
+        }, 2000);
+      }, 2000);
     }
   };
 
@@ -108,6 +111,14 @@ const PuzzleGame: React.FC = () => {
 
   const handleMusicPause = () => {
     console.log('Music paused');
+  };
+
+  // Handle solve button click
+  const handleSolveClick = () => {
+    if (!flickerStarted || !firstTransitionComplete) return; // Prevent solve if transitions aren't complete
+    console.log('Solve button clicked');
+    console.log('Current game state:', { isPlaying, isCompleted, tiles });
+    showSolution();
   };
 
   return (
@@ -135,7 +146,7 @@ const PuzzleGame: React.FC = () => {
           
           <Button
             onClick={resetGame}
-            disabled={!isPlaying}
+            disabled={!isPlaying || !flickerStarted}
             className="flex-1"
           >
             <RotateCcw size={14} className="mr-1" />
@@ -145,7 +156,7 @@ const PuzzleGame: React.FC = () => {
           {solution.isShowingSolution ? (
             <Button
               onClick={stopSolution}
-              disabled={!isPlaying}
+              disabled={!isPlaying || !flickerStarted}
               className="flex-1"
             >
               <X size={14} className="mr-1" />
@@ -153,12 +164,8 @@ const PuzzleGame: React.FC = () => {
             </Button>
           ) : (
             <Button
-              onClick={() => {
-                console.log('Solve button clicked');
-                console.log('Current game state:', { isPlaying, isCompleted, tiles });
-                showSolution();
-              }}
-              disabled={!isPlaying || isCompleted}
+              onClick={handleSolveClick}
+              disabled={!isPlaying || isCompleted || !flickerStarted || !firstTransitionComplete}
               className="flex-1"
             >
               <Lightbulb size={14} className="mr-1" />
@@ -190,6 +197,7 @@ const PuzzleGame: React.FC = () => {
               isPlaying={isPlaying}
               onTileClick={moveTile}
               onTransitionEnd={onTransitionEnd}
+              isInteractive={flickerStarted}
             />
           )}
         </div>

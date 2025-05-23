@@ -9,6 +9,7 @@ interface PuzzleTileProps {
   gridSize: number;
   onClick: () => void;
   onTransitionEnd: () => void;
+  isInteractive: boolean;
 }
 
 const PuzzleTile: React.FC<PuzzleTileProps> = React.memo(({ 
@@ -16,7 +17,8 @@ const PuzzleTile: React.FC<PuzzleTileProps> = React.memo(({
   imageUrl, 
   gridSize,
   onClick,
-  onTransitionEnd
+  onTransitionEnd,
+  isInteractive
 }) => {
   const tileRef = useRef<HTMLDivElement>(null);
   
@@ -58,7 +60,7 @@ const PuzzleTile: React.FC<PuzzleTileProps> = React.memo(({
     left: 0,
     transform: transformStyle,
     transition: 'transform 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-    cursor: tile.isEmpty ? 'default' : 'pointer',
+    cursor: tile.isEmpty || !isInteractive ? 'default' : 'pointer',
     userSelect: 'none',
     backfaceVisibility: 'hidden',
     WebkitBackfaceVisibility: 'hidden',

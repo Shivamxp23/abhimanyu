@@ -9,6 +9,7 @@ interface PuzzleBoardProps {
   isPlaying: boolean;
   onTileClick: (index: number) => void;
   onTransitionEnd: () => void;
+  isInteractive: boolean;
 }
 
 const PuzzleBoard: React.FC<PuzzleBoardProps> = ({ 
@@ -16,14 +17,15 @@ const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
   imageUrl, 
   isPlaying,
   onTileClick,
-  onTransitionEnd 
+  onTransitionEnd,
+  isInteractive
 }) => {
   const { GRID_SIZE } = PUZZLE_CONSTANTS;
   
   // Prevent clicks during transitions
   const isTransitioning = useRef(false);
   const handleTileClick = (index: number) => {
-    if (isTransitioning.current) return;
+    if (isTransitioning.current || !isInteractive) return;
     onTileClick(index);
   };
 
@@ -57,6 +59,7 @@ const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
           gridSize={GRID_SIZE}
           onClick={() => handleTileClick(tile.currentIndex)}
           onTransitionEnd={handleTransitionEnd}
+          isInteractive={isInteractive}
         />
       ))}
     </div>
