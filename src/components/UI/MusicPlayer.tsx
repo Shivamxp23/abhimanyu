@@ -11,6 +11,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentSong, setCurrentSong] = useState("Jhol.mp3");
+  const [songHistory, setSongHistory] = useState<string[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const [songHistory, setSongHistory] = useState<string[]>([]);

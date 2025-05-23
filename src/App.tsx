@@ -115,7 +115,6 @@ function App() {
     const handleGameStart = (event: CustomEvent) => {
       console.log('Game start event received:', event.detail);
       setIsGameStarted(true);
-      setShowRain(true); // Show rain effect when game starts
       
       // Only show start notification if it hasn't been shown before
       if (!hasShownStartNotification) {
@@ -281,12 +280,28 @@ function App() {
             Start
           </button>
           
-          {isPlaying && (
-            <div className="flex items-center gap-2 px-2 py-0.5 text-xs bg-[#000080] text-white">
-              <span className="animate-pulse">♪</span>
-              <span>Playing: Jhol</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {isPlaying && (
+              <div className="flex items-center gap-2 px-2 py-0.5 text-xs bg-[#000080] text-white">
+                <span className="animate-pulse">♪</span>
+                <span>Playing: Jhol</span>
+              </div>
+            )}
+            
+            {isGameStarted && (
+              <button
+                onClick={() => setShowRain(!showRain)}
+                className={`px-2 py-0.5 text-xs font-bold border-solid border-[1px] flex items-center gap-1 ${
+                  showRain 
+                    ? 'bg-[#000080] text-white border-t-[#1084d0] border-l-[#1084d0] border-r-[#000040] border-b-[#000040]' 
+                    : 'bg-[#c0c0c0] text-black border-t-[#ffffff] border-l-[#ffffff] border-r-[#808080] border-b-[#808080]'
+                }`}
+              >
+                <span className="text-[10px]">🌧️</span>
+                {showRain ? 'Rain On' : 'Rain Off'}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Mobile Warning Message */}
