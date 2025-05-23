@@ -40,18 +40,10 @@ function App() {
     const playAudio = async () => {
       try {
         await audioRef.current?.play();
-        setHasShownAudioNotification(true);
-        setNotification({
-          show: true,
-          message: 'Ambient sounds enabled',
-          emoji: '🔊'
-        });
-        // Clear notification after 3 seconds
-        setTimeout(() => {
-          setNotification(prev => ({ ...prev, show: false }));
-        }, 3000);
+        // Don't show any notification on initial autoplay success
       } catch (error) {
         console.log('Audio autoplay failed:', error);
+        // Always show click notification first
         setNotification({
           show: true,
           message: 'Click anywhere to enable sounds',
@@ -70,19 +62,16 @@ function App() {
       if (audioRef.current) {
         try {
           await audioRef.current.play();
-          // Only show the enabled notification if we haven't shown it before
-          if (!hasShownAudioNotification) {
-            setHasShownAudioNotification(true);
-            setNotification({
-              show: true,
-              message: 'Ambient sounds enabled',
-              emoji: '🔊'
-            });
-            // Clear notification after 3 seconds
-            setTimeout(() => {
-              setNotification(prev => ({ ...prev, show: false }));
-            }, 3000);
-          }
+          // Show enabled notification only after clicking
+          setNotification({
+            show: true,
+            message: 'Ambient sounds enabled',
+            emoji: '🔊'
+          });
+          // Clear notification after 3 seconds
+          setTimeout(() => {
+            setNotification(prev => ({ ...prev, show: false }));
+          }, 3000);
         } catch (error) {
           console.log('Audio playback failed:', error);
         }
@@ -98,7 +87,7 @@ function App() {
       }
       document.removeEventListener('click', enableAudio);
     };
-  }, [hasShownAudioNotification]);
+  }, []);
 
   const toggleMute = () => {
     if (audioRef.current) {
