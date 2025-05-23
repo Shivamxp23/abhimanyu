@@ -12,6 +12,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
   const [duration, setDuration] = useState(0);
   const [currentSong, setCurrentSong] = useState("Jhol.mp3");
   const [songHistory, setSongHistory] = useState<string[]>([]);
+  const [availableSongs, setAvailableSongs] = useState<string[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +47,11 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
     "Uska He Banana.mp3"
   ];
 
+  // Initialize available songs when component mounts
+  useEffect(() => {
+    setAvailableSongs([...songs].filter(song => song !== currentSong));
+  }, []);
+
   const showNowPlayingNotification = (songName: string) => {
     // Skip notification for the first song (Jhol.mp3)
     if (songName === 'Jhol.mp3') {
@@ -63,9 +69,22 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
   };
 
   const playRandomSong = () => {
-    const availableSongs = songs.filter(song => song !== currentSong);
+    // If we've used up all available songs, reset the available songs
+    if (availableSongs.length === 0) {
+      const newAvailableSongs = [...songs].filter(song => song !== currentSong);
+      setAvailableSongs(newAvailableSongs);
+      const randomIndex = Math.floor(Math.random() * newAvailableSongs.length);
+      return newAvailableSongs[randomIndex];
+    }
+
+    // Pick a random song from available songs
     const randomIndex = Math.floor(Math.random() * availableSongs.length);
-    return availableSongs[randomIndex];
+    const nextSong = availableSongs[randomIndex];
+    
+    // Remove the selected song from available songs
+    setAvailableSongs(prev => prev.filter(song => song !== nextSong));
+    
+    return nextSong;
   };
 
   const playAudio = async (audio: HTMLAudioElement) => {
