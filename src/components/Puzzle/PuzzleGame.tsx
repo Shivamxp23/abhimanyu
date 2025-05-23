@@ -22,6 +22,7 @@ const PuzzleGame: React.FC = () => {
     elapsedTime, 
     isPlaying, 
     isCompleted,
+    isFading,
     solution,
     startGame, 
     resetGame, 
@@ -59,10 +60,15 @@ const PuzzleGame: React.FC = () => {
 
   // Handle new game with new image
   const handleNewGame = () => {
+    // First fetch new image
     fetchRandomImage();
-    resetGame();
-    setFlickerStarted(false);
-    setFirstTransitionComplete(false);
+    
+    // Then reset the game state after a short delay
+    setTimeout(() => {
+      resetGame();
+      setFlickerStarted(false);
+      setFirstTransitionComplete(false);
+    }, 100);
   };
 
   // Handle start game with current image
@@ -218,9 +224,10 @@ const PuzzleGame: React.FC = () => {
               tiles={tiles}
               imageUrl={imageUrl}
               isPlaying={isPlaying}
+              isFading={isFading}
               onTileClick={moveTile}
               onTransitionEnd={onTransitionEnd}
-              isInteractive={flickerStarted}
+              isInteractive={flickerStarted && firstTransitionComplete}
             />
           )}
         </div>

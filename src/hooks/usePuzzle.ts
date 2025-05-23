@@ -35,6 +35,7 @@ const [moves, setMoves] = useState<number>(0);
 const [elapsedTime, setElapsedTime] = useState<number>(0);
 const [isPlaying, setIsPlaying] = useState<boolean>(false);
 const [isCompleted, setIsCompleted] = useState<boolean>(false);
+const [isFading, setIsFading] = useState<boolean>(false);
 const [timerInterval, setTimerInterval] = useState<number | null>(null);
 const [solution, setSolution] = useState<GameState['solution']>({
 moves: [],
@@ -115,14 +116,20 @@ setTiles(updatedTiles);
 setMoves(prev => prev + 1);
 
 if (isPuzzleSolved(updatedTiles)) {
-setIsCompleted(true);
-setIsPlaying(false);
-setSolution(prev => ({ ...prev, isShowingSolution: false }));
-// Clear the timer when puzzle is solved
-if (timerInterval) {
-  clearInterval(timerInterval);
-  setTimerInterval(null);
-}
+  // Start fade animation immediately
+  setIsFading(true);
+  
+  // Set completion state after a short delay
+  setTimeout(() => {
+    setIsCompleted(true);
+    setIsPlaying(false);
+    setSolution(prev => ({ ...prev, isShowingSolution: false }));
+    // Clear the timer when puzzle is solved
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+  }, 1000); // Match with fade duration
 }
 
 // Wait for animation to complete
@@ -131,7 +138,7 @@ setIsAnimating(false);
 resolve();
 }, 300);
 });
-}, [tiles]);
+}, [tiles, solution.isShowingSolution, solution.moves, solution.currentStep, timerInterval]);
 
 const queueMove = useCallback((tileIndex: number) => {
 const moveOperation = () => moveTileWithAnimation(tileIndex);
@@ -268,47 +275,49 @@ const showSolution = useCallback(() => {
 
 // Start the game and timer
 const startGame = useCallback(() => {
-if (isPlaying) return;
+  if (isPlaying) return;
 
-const shuffledTiles = shuffleTiles(createInitialTiles());
-setTiles(shuffledTiles);
-setMoves(0);
-setElapsedTime(0);
-setIsCompleted(false);
-setIsPlaying(true);
-setSolution({
-moves: [],
-path: [],
-currentStep: 0,
-isShowingSolution: false
-});
+  const shuffledTiles = shuffleTiles(createInitialTiles());
+  setTiles(shuffledTiles);
+  setMoves(0);
+  setElapsedTime(0);
+  setIsCompleted(false);
+  setIsFading(false); // Reset fade state
+  setIsPlaying(true);
+  setSolution({
+    moves: [],
+    path: [],
+    currentStep: 0,
+    isShowingSolution: false
+  });
 
-const interval = window.setInterval(() => {
-setElapsedTime(prev => prev + 1);
-}, 1000);
+  const interval = window.setInterval(() => {
+    setElapsedTime(prev => prev + 1);
+  }, 1000);
 
-setTimerInterval(interval);
+  setTimerInterval(interval);
 }, [isPlaying]);
 
 // Reset the game
 const resetGame = useCallback(() => {
-moveQueue.current = [];
-setTiles(createInitialTiles());
-setMoves(0);
-setElapsedTime(0);
-setIsCompleted(false);
-setIsPlaying(false);
-setSolution({
-moves: [],
-path: [],
-currentStep: 0,
-isShowingSolution: false
-});
+  moveQueue.current = [];
+  setTiles(createInitialTiles());
+  setMoves(0);
+  setElapsedTime(0);
+  setIsCompleted(false);
+  setIsFading(false); // Reset fade state
+  setIsPlaying(false);
+  setSolution({
+    moves: [],
+    path: [],
+    currentStep: 0,
+    isShowingSolution: false
+  });
 
-if (timerInterval) {
-clearInterval(timerInterval);
-setTimerInterval(null);
-}
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    setTimerInterval(null);
+  }
 }, [timerInterval]);
 
 // Move a tile if the move is valid
@@ -338,6 +347,7 @@ moves,
 elapsedTime,
 isPlaying,
 isCompleted,
+isFading,
 imageUrl,
 solution,
 startGame,
