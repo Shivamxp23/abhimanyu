@@ -1,7 +1,7 @@
 import PuzzleGame from './components/Puzzle/PuzzleGame';
 import Notification from './components/UI/Notification';
-import { Monitor, Folder, Globe, Trash2, HardDrive, Files, User2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Monitor, Folder, Globe, Trash2, HardDrive, Files, User2, Volume2, VolumeX } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 
 const DesktopIcon = ({ icon: Icon, label }: { icon: any, label: string }) => (
   <div className="flex flex-col items-center gap-0.5 cursor-pointer select-none group mb-0.5 scale-75">
@@ -19,6 +19,94 @@ function App() {
     emoji: ''
   });
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isGameStarted, setIsGameStarted] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize and play background audio
+  useEffect(() => {
+    audioRef.current = new Audio('/Birds Chirp.mp3');
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.3; // Set volume to 30% for a more subtle effect
+    
+    // Play audio when component mounts
+    const playAudio = async () => {
+      try {
+        await audioRef.current?.play();
+        setNotification({
+          show: true,
+          message: 'Ambient sounds enabled',
+          emoji: '🔊'
+        });
+      } catch (error) {
+        console.log('Audio autoplay failed:', error);
+        setNotification({
+          show: true,
+          message: 'Click anywhere to enable sounds',
+          emoji: '🔇'
+        });
+      }
+    };
+    playAudio();
+
+    // Add click listener to enable audio
+    const enableAudio = async () => {
+      if (audioRef.current) {
+        try {
+          await audioRef.current.play();
+          setNotification({
+            show: true,
+            message: 'Ambient sounds enabled',
+            emoji: '🔊'
+          });
+        } catch (error) {
+          console.log('Audio playback failed:', error);
+        }
+      }
+    };
+    document.addEventListener('click', enableAudio, { once: true });
+
+    // Cleanup on unmount
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      document.removeEventListener('click', enableAudio);
+    };
+  }, []);
+
+  const toggleMute = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+      setNotification({
+        show: true,
+        message: isMuted ? 'Ambient sounds enabled' : 'Ambient sounds muted',
+        emoji: isMuted ? '🔊' : '🔇'
+      });
+    }
+  };
+
+  // Listen for game start event
+  useEffect(() => {
+    const handleGameStart = () => {
+      setIsGameStarted(true);
+      // Start the dark mode transition
+      setTimeout(() => {
+        setIsDarkMode(true);
+        setNotification({
+          show: true,
+          message: 'Night falls...',
+          emoji: '🌙'
+        });
+      }, 500); // Delay dark mode transition by 500ms
+    };
+
+    window.addEventListener('gameStart', handleGameStart);
+    return () => window.removeEventListener('gameStart', handleGameStart);
+  }, []);
 
   // Add event listener for custom notifications
   useEffect(() => {
@@ -54,9 +142,15 @@ function App() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Bliss Wallpaper Background */}
+      {/* Night Wallpaper Background - positioned behind */}
+      <div
+        className={`fixed inset-0 bg-cover bg-center bg-no-repeat scale-100 transition-opacity duration-1500 ${isDarkMode ? 'opacity-100' : 'opacity-0'}`}
+        style={{ backgroundImage: 'url("/Windows Xp Bliss Wallpaper at night.png")' }}
+      />
+
+      {/* Bliss Wallpaper Background - positioned in front and fades out */}
       <div 
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat scale-100"
+        className={`fixed inset-0 bg-cover bg-center bg-no-repeat scale-100 transition-opacity duration-1500 ${isDarkMode ? 'opacity-0' : 'opacity-100'}`}
         style={{ backgroundImage: 'url("/Windows Xp Bliss Wallpaper HD.jpg")' }}
       />
 

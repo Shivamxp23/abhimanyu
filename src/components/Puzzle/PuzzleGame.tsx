@@ -11,6 +11,7 @@ import { RefreshCw, Play, RotateCcw, Lightbulb, X } from 'lucide-react';
 const PuzzleGame: React.FC = () => {
   const musicPlayerRef = useRef<HTMLAudioElement>(null);
   const [gameStarted, setGameStarted] = React.useState(false);
+  const ambientSoundRef = useRef<HTMLAudioElement | null>(null);
   const { imageUrl, isLoading, error, fetchRandomImage } = useRandomImage();
   const { 
     tiles, 
@@ -32,6 +33,21 @@ const PuzzleGame: React.FC = () => {
     fetchRandomImage();
   }, [fetchRandomImage]);
 
+  // Initialize ambient sound
+  useEffect(() => {
+    ambientSoundRef.current = new Audio('/music/Birds Chirp.mp3');
+    ambientSoundRef.current.loop = true;
+    ambientSoundRef.current.volume = 0.3; // Lower volume for ambient sound
+    ambientSoundRef.current.play().catch(err => console.error('Failed to play ambient sound:', err));
+
+    return () => {
+      if (ambientSoundRef.current) {
+        ambientSoundRef.current.pause();
+        ambientSoundRef.current = null;
+      }
+    };
+  }, []);
+
   // Debug log to verify the state of the tiles array during runtime
   useEffect(() => {
     console.log('Tiles:', tiles);
@@ -47,6 +63,21 @@ const PuzzleGame: React.FC = () => {
   const handleStartGame = () => {
     if (imageUrl) {
       startGame();
+      setGameStarted(true);
+      // Fade out ambient sound and start game music
+      if (ambientSoundRef.current) {
+        const fadeOut = setInterval(() => {
+          if (ambientSoundRef.current && ambientSoundRef.current.volume > 0.01) {
+            ambientSoundRef.current.volume -= 0.01;
+          } else {
+            if (ambientSoundRef.current) {
+              ambientSoundRef.current.pause();
+            }
+            clearInterval(fadeOut);
+          }
+        }, 50);
+      }
+
       // Start music and show notification
       const audioElement = document.querySelector('audio');
       if (audioElement) {

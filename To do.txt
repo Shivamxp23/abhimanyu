@@ -11,3 +11,15 @@ As soon as user is just about to solve the puzzle, on the puzzle grid display a 
 Upon clicking exit button, flash "No way out, Abhimanyu"
 
 Add sound effects too, first it is peachy sunshine birds chirping feel good sounds. Keep it getting darker as and how he dives let one particular song start as user starts to play the game.
+
+Perfect! Can you make it such that
+when the user lands on the page there's this audio playing on loop which is at "public\Birds Chirp.mp3" and when
+user starts playing the game the remaining functions remain the same but
+the background slowly fades to "public\Windows Xp Bliss Wallpaper at night.png"
+and all the ui fades to dark mode
+Add illumination under the puzzle game box when it goes to dark mode.
+
+cd "C:\Users\soni8\Desktop\everything\University 2.0\Project(s)\1_Working on\abhimanyu"
+git add .
+git commit -m "added ambience"
+git push origin main
