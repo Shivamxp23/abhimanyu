@@ -121,6 +121,29 @@ const PuzzleGame: React.FC = () => {
     showSolution();
   };
 
+  // Handle stop solve button click
+  const handleStopSolve = () => {
+    console.log('Stop solve clicked');
+    // Stop the solution process
+    stopSolution();
+    // Clear any pending solution moves
+    window.removeEventListener('keydown', handleKeyDown);
+    // Force stop any ongoing animations
+    const tiles = document.querySelectorAll('[data-tile-id]');
+    tiles.forEach(tile => {
+      if (tile instanceof HTMLElement) {
+        tile.style.transition = 'none';
+        // Force reflow
+        tile.offsetHeight;
+        tile.style.transition = '';
+      }
+    });
+    // Re-add the event listener after a short delay
+    setTimeout(() => {
+      window.addEventListener('keydown', handleKeyDown);
+    }, 100);
+  };
+
   return (
     <WindowFrame title="Kintsugi" className="mx-auto mt-4" style={{ width: '632px' }}>
       <div className="flex flex-col gap-4">
@@ -155,7 +178,7 @@ const PuzzleGame: React.FC = () => {
 
           {solution.isShowingSolution ? (
             <Button
-              onClick={stopSolution}
+              onClick={handleStopSolve}
               disabled={!isPlaying || !flickerStarted}
               className="flex-1"
             >

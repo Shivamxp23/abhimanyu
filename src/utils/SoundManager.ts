@@ -5,8 +5,8 @@ class SoundManager {
   private currentAmbience: Howl | null = null;
   private nextAmbience: Howl | null = null;
   private crossfadeDuration: number = 2000; // 2 seconds crossfade
-  private targetVolume: number = 0.05; // 5% volume for rain and thunder
-  private birdsChirpVolume: number = 0.55; // 55% volume for birds chirping
+  private rainVolume = 0.05; // 5% volume for rain and thunder
+  private birdsChirpVolume = 2.0; // 200% volume for birds chirping
 
   private constructor() {}
 
@@ -18,25 +18,22 @@ class SoundManager {
   }
 
   public playAmbience(soundPath: string): void {
-    // Create new ambience sound
-    const newAmbience = new Howl({
+    // Stop current ambience if playing
+    if (this.currentAmbience) {
+      this.currentAmbience.stop();
+    }
+
+    // Create new sound
+    this.currentAmbience = new Howl({
       src: [soundPath],
-      loop: true,
-      volume: 0,
-      autoplay: true
+      volume: soundPath.includes('Birds Chirp') ? this.birdsChirpVolume : this.rainVolume,
+      loop: soundPath.includes('Rain and thunder'), // Loop only rain and thunder
+      fade: true
     });
 
-    // If there's a current ambience, crossfade
-    if (this.currentAmbience) {
-      this.nextAmbience = newAmbience;
-      this.crossfade();
-    } else {
-      // If no current ambience, just fade in
-      this.currentAmbience = newAmbience;
-      // Use different volume based on the sound
-      const targetVolume = soundPath.includes('Birds Chirp') ? this.birdsChirpVolume : this.targetVolume;
-      this.fadeIn(newAmbience, targetVolume);
-    }
+    // Fade in the new sound
+    this.currentAmbience.fade(0, soundPath.includes('Birds Chirp') ? this.birdsChirpVolume : this.rainVolume, 2000);
+    this.currentAmbience.play();
   }
 
   private crossfade(): void {
@@ -48,11 +45,11 @@ class SoundManager {
       const progress = Math.min(elapsed / this.crossfadeDuration, 1);
 
       if (this.currentAmbience) {
-        const currentVolume = this.currentAmbience._src.includes('Birds Chirp') ? this.birdsChirpVolume : this.targetVolume;
+        const currentVolume = this.currentAmbience._src.includes('Birds Chirp') ? this.birdsChirpVolume : this.rainVolume;
         this.currentAmbience.volume(currentVolume * (1 - progress));
       }
       if (this.nextAmbience) {
-        const nextVolume = this.nextAmbience._src.includes('Birds Chirp') ? this.birdsChirpVolume : this.targetVolume;
+        const nextVolume = this.nextAmbience._src.includes('Birds Chirp') ? this.birdsChirpVolume : this.rainVolume;
         this.nextAmbience.volume(nextVolume * progress);
       }
 

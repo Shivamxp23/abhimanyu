@@ -23,6 +23,12 @@ stopSolution: () => void;
 onTransitionEnd: () => void;
 }
 
+declare global {
+  interface Window {
+    solutionTimeout?: number;
+  }
+}
+
 export const usePuzzle = ({ imageUrl }: UsePuzzleOptions): UsePuzzleResult => {
 const [tiles, setTiles] = useState<Tile[]>(createInitialTiles());
 const [moves, setMoves] = useState<number>(0);
@@ -172,9 +178,24 @@ queueMove(tileToMove);
 // Stop showing solution
 const stopSolution = useCallback(() => {
   console.log('Stopping solution');
-  setSolution(prev => ({ ...prev, isShowingSolution: false }));
-  moveQueue.current = []; // Clear the move queue
+  // Clear all solution state
+  setSolution(prev => ({ 
+    ...prev, 
+    isShowingSolution: false,
+    moves: [],
+    path: [],
+    currentStep: 0
+  }));
+  // Clear the move queue
+  moveQueue.current = [];
   isProcessingMove.current = false;
+  // Reset animation state
+  setIsAnimating(false);
+  // Remove any pending timeouts
+  if (window.solutionTimeout) {
+    window.clearTimeout(window.solutionTimeout);
+    window.solutionTimeout = undefined;
+  }
 }, []);
 
 const showSolution = useCallback(() => {
@@ -230,7 +251,7 @@ const showSolution = useCallback(() => {
     currentStep++;
 
     // Schedule next move after animation
-    setTimeout(() => {
+    window.solutionTimeout = window.setTimeout(() => {
       setSolution(prev => ({
         ...prev,
         currentStep: currentStep
@@ -240,10 +261,10 @@ const showSolution = useCallback(() => {
   };
 
   // Start the solution sequence after a short delay
-  setTimeout(() => {
+  window.solutionTimeout = window.setTimeout(() => {
     simulateNextMove();
   }, 100);
-}, [tiles, isPlaying, isCompleted, solution.isShowingSolution, moveTileWithAnimation, processMoveQueue, stopSolution]);
+}, [tiles, isPlaying, isCompleted, stopSolution]);
 
 // Start the game and timer
 const startGame = useCallback(() => {
