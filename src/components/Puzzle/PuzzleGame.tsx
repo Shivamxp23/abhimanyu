@@ -53,6 +53,13 @@ const PuzzleGame: React.FC = () => {
     console.log('Tiles:', tiles);
   }, [tiles]);
 
+  // Dispatch puzzle completion event
+  useEffect(() => {
+    if (isCompleted) {
+      window.dispatchEvent(new Event('puzzleComplete'));
+    }
+  }, [isCompleted]);
+
   // Handle new game with new image
   const handleNewGame = () => {
     fetchRandomImage();

@@ -22,6 +22,213 @@
   }
 }
 
+@keyframes flicker {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  20% {
+    opacity: 0.2;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  40% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.95;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes brokenBulb {
+  0% {
+    opacity: 1;
+  }
+  2% {
+    opacity: 0.2;
+  }
+  4% {
+    opacity: 1;
+  }
+  6% {
+    opacity: 0.1;
+  }
+  8% {
+    opacity: 0.9;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  12% {
+    opacity: 0.8;
+  }
+  14% {
+    opacity: 0.2;
+  }
+  16% {
+    opacity: 0.7;
+  }
+  18% {
+    opacity: 0.1;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  22% {
+    opacity: 0.2;
+  }
+  24% {
+    opacity: 0.5;
+  }
+  26% {
+    opacity: 0.1;
+  }
+  28% {
+    opacity: 0.4;
+  }
+  30% {
+    opacity: 0.2;
+  }
+  32% {
+    opacity: 0.3;
+  }
+  34% {
+    opacity: 0.1;
+  }
+  36% {
+    opacity: 0.2;
+  }
+  38% {
+    opacity: 0.1;
+  }
+  40% {
+    opacity: 0.15;
+  }
+  42% {
+    opacity: 0.05;
+  }
+  44% {
+    opacity: 0.1;
+  }
+  46% {
+    opacity: 0.02;
+  }
+  48% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.01;
+  }
+  52% {
+    opacity: 0.06;
+  }
+  54% {
+    opacity: 0.02;
+  }
+  56% {
+    opacity: 0.04;
+  }
+  58% {
+    opacity: 0.01;
+  }
+  60% {
+    opacity: 0.03;
+  }
+  62% {
+    opacity: 0.01;
+  }
+  64% {
+    opacity: 0.02;
+  }
+  66% {
+    opacity: 0.01;
+  }
+  68% {
+    opacity: 0.015;
+  }
+  70% {
+    opacity: 0.01;
+  }
+  72% {
+    opacity: 0.012;
+  }
+  74% {
+    opacity: 0.008;
+  }
+  76% {
+    opacity: 0.01;
+  }
+  78% {
+    opacity: 0.005;
+  }
+  80% {
+    opacity: 0.008;
+  }
+  82% {
+    opacity: 0.003;
+  }
+  84% {
+    opacity: 0.005;
+  }
+  86% {
+    opacity: 0.002;
+  }
+  88% {
+    opacity: 0.003;
+  }
+  90% {
+    opacity: 0.001;
+  }
+  92% {
+    opacity: 0.002;
+  }
+  94% {
+    opacity: 0.001;
+  }
+  96% {
+    opacity: 0.001;
+  }
+  98% {
+    opacity: 0.0005;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.99);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+  100% {
+    opacity: 0.95;
+    transform: scale(0.99);
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
 }

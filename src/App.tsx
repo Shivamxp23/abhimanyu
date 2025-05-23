@@ -22,6 +22,9 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [showIllumination, setShowIllumination] = useState(false);
+  const [isIlluminationBroken, setIsIlluminationBroken] = useState(false);
+  const [hasShownStartNotification, setHasShownStartNotification] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize and play background audio
@@ -39,10 +42,10 @@ function App() {
           message: 'Ambient sounds enabled',
           emoji: '🔊'
         });
-        // Clear notification after 5 seconds
+        // Clear notification after 3 seconds
         setTimeout(() => {
           setNotification(prev => ({ ...prev, show: false }));
-        }, 5000);
+        }, 3000);
       } catch (error) {
         console.log('Audio autoplay failed:', error);
         setNotification({
@@ -50,10 +53,10 @@ function App() {
           message: 'Click anywhere to enable sounds',
           emoji: '🔇'
         });
-        // Clear notification after 5 seconds
+        // Clear notification after 3 seconds
         setTimeout(() => {
           setNotification(prev => ({ ...prev, show: false }));
-        }, 5000);
+        }, 3000);
       }
     };
     playAudio();
@@ -68,10 +71,10 @@ function App() {
             message: 'Ambient sounds enabled',
             emoji: '🔊'
           });
-          // Clear notification after 5 seconds
+          // Clear notification after 3 seconds
           setTimeout(() => {
             setNotification(prev => ({ ...prev, show: false }));
-          }, 5000);
+          }, 3000);
         } catch (error) {
           console.log('Audio playback failed:', error);
         }
@@ -98,6 +101,10 @@ function App() {
         message: isMuted ? 'Ambient sounds enabled' : 'Ambient sounds muted',
         emoji: isMuted ? '🔊' : '🔇'
       });
+      // Clear notification after 3 seconds
+      setTimeout(() => {
+        setNotification(prev => ({ ...prev, show: false }));
+      }, 3000);
     }
   };
 
@@ -107,27 +114,33 @@ function App() {
       console.log('Game start event received:', event.detail);
       setIsGameStarted(true);
       
-      // Show notification with data from the event
-      setNotification({
-        show: true,
-        message: event.detail.message,
-        emoji: event.detail.emoji
-      });
-
-      // Reset notification after 5 seconds
-      setTimeout(() => {
-        setNotification(prev => ({ ...prev, show: false }));
-      }, 5000);
+      // Only show start notification if it hasn't been shown before
+      if (!hasShownStartNotification) {
+        setNotification({
+          show: true,
+          message: event.detail.message,
+          emoji: event.detail.emoji
+        });
+        setHasShownStartNotification(true);
+        // Clear start notification after 5 seconds
+        setTimeout(() => {
+          setNotification(prev => ({ ...prev, show: false }));
+        }, 5000);
+      }
 
       // Start the dark mode transition
       setTimeout(() => {
         setIsDarkMode(true);
-      }, 500); // Delay dark mode transition by 500ms
+        // Show illumination after dark mode transition
+        setTimeout(() => {
+          setShowIllumination(true);
+        }, 10000); // Wait for dark mode transition to complete
+      }, 500);
     };
 
     window.addEventListener('gameStart', handleGameStart as EventListener);
     return () => window.removeEventListener('gameStart', handleGameStart as EventListener);
-  }, []);
+  }, [hasShownStartNotification]);
 
   // Add event listener for custom notifications
   useEffect(() => {
@@ -138,11 +151,10 @@ function App() {
         message: event.detail.message,
         emoji: event.detail.emoji
       });
-
-      // Reset notification after 5 seconds
+      // Clear notification after 3 seconds
       setTimeout(() => {
         setNotification(prev => ({ ...prev, show: false }));
-      }, 5000);
+      }, 3000);
     };
 
     window.addEventListener('showNotification', handleNotification as EventListener);
@@ -161,6 +173,10 @@ function App() {
       message: 'Now playing: Jhol',
       emoji: '🎵'
     });
+    // Clear notification after 3 seconds
+    setTimeout(() => {
+      setNotification(prev => ({ ...prev, show: false }));
+    }, 3000);
   };
 
   const handleMusicPause = () => {
@@ -170,7 +186,25 @@ function App() {
       message: 'Music paused',
       emoji: '⏸️'
     });
+    // Clear notification after 3 seconds
+    setTimeout(() => {
+      setNotification(prev => ({ ...prev, show: false }));
+    }, 3000);
   };
+
+  // Listen for puzzle completion
+  useEffect(() => {
+    const handlePuzzleComplete = () => {
+      setIsIlluminationBroken(true);
+      // Reset after animation completes
+      setTimeout(() => {
+        setIsIlluminationBroken(false);
+      }, 4000); // Duration of broken bulb animation
+    };
+
+    window.addEventListener('puzzleComplete', handlePuzzleComplete as EventListener);
+    return () => window.removeEventListener('puzzleComplete', handlePuzzleComplete as EventListener);
+  }, []);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -205,7 +239,18 @@ function App() {
         </div>
         
         {/* Main Content */}
-        <main className="w-full max-w-xl transform scale-75 -mt-32">
+        <main className="w-full max-w-xl transform scale-75 -mt-32 relative">
+          {/* Illumination effect */}
+          {showIllumination && (
+            <div 
+              className="absolute -inset-8 bg-white/40 blur-3xl rounded-full transition-opacity duration-1000"
+              style={{
+                animation: isIlluminationBroken 
+                  ? 'brokenBulb 4s ease-out forwards'
+                  : 'flicker 1s ease-out forwards, pulse 2s ease-in-out infinite 1.5s'
+              }}
+            />
+          )}
           <PuzzleGame />
         </main>
 
