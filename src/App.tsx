@@ -2,6 +2,7 @@ import PuzzleGame from './components/Puzzle/PuzzleGame';
 import Notification from './components/UI/Notification';
 import { Monitor, Folder, Globe, Trash2, HardDrive, Files, User2, Volume2, VolumeX } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import RainEffect from './components/UI/RainEffect';
 
 const DesktopIcon = ({ icon: Icon, label }: { icon: any, label: string }) => (
   <div className="flex flex-col items-center gap-0.5 cursor-pointer select-none group mb-0.5 scale-75">
@@ -25,6 +26,7 @@ function App() {
   const [showIllumination, setShowIllumination] = useState(false);
   const [isIlluminationBroken, setIsIlluminationBroken] = useState(false);
   const [hasShownStartNotification, setHasShownStartNotification] = useState(false);
+  const [showRain, setShowRain] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize and play background audio
@@ -113,6 +115,7 @@ function App() {
     const handleGameStart = (event: CustomEvent) => {
       console.log('Game start event received:', event.detail);
       setIsGameStarted(true);
+      setShowRain(true); // Show rain effect when game starts
       
       // Only show start notification if it hasn't been shown before
       if (!hasShownStartNotification) {
@@ -141,6 +144,13 @@ function App() {
     window.addEventListener('gameStart', handleGameStart as EventListener);
     return () => window.removeEventListener('gameStart', handleGameStart as EventListener);
   }, [hasShownStartNotification]);
+
+  // Reset rain effect when game is reset
+  useEffect(() => {
+    if (!isGameStarted) {
+      setShowRain(false);
+    }
+  }, [isGameStarted]);
 
   // Add event listener for custom notifications
   useEffect(() => {
@@ -225,6 +235,9 @@ function App() {
           transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
         }}
       />
+
+      {/* Rain Effect */}
+      {showRain && <RainEffect />}
 
       <div className="relative min-h-screen flex flex-col items-center justify-center p-4">
         {/* Desktop Icons */}
