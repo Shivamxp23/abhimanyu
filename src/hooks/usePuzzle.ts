@@ -112,6 +112,11 @@ if (isPuzzleSolved(updatedTiles)) {
 setIsCompleted(true);
 setIsPlaying(false);
 setSolution(prev => ({ ...prev, isShowingSolution: false }));
+// Clear the timer when puzzle is solved
+if (timerInterval) {
+  clearInterval(timerInterval);
+  setTimerInterval(null);
+}
 }
 
 // Wait for animation to complete
