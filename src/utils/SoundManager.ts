@@ -1,14 +1,27 @@
-import { Howl } from 'howler';
-
 class SoundManager {
   private static instance: SoundManager;
-  private currentAmbience: Howl | null = null;
-  private nextAmbience: Howl | null = null;
-  private crossfadeDuration: number = 2000; // 2 seconds crossfade
+  private audioContext: AudioContext;
+  private gainNode1: GainNode;
+  private gainNode2: GainNode;
+  private source1: AudioBufferSourceNode | null = null;
+  private source2: AudioBufferSourceNode | null = null;
+  private currentSound: string | null = null;
   private rainVolume = 0.05; // 5% volume for rain and thunder
   private birdsChirpVolume = 2.0; // 200% volume for birds chirping
 
-  private constructor() {}
+  private constructor() {
+    this.audioContext = new AudioContext();
+    this.gainNode1 = this.audioContext.createGain();
+    this.gainNode2 = this.audioContext.createGain();
+
+    // Initialize gain nodes
+    this.gainNode1.gain.value = 0;
+    this.gainNode2.gain.value = 0;
+
+    // Connect gain nodes to destination
+    this.gainNode1.connect(this.audioContext.destination);
+    this.gainNode2.connect(this.audioContext.destination);
+  }
 
   public static getInstance(): SoundManager {
     if (!SoundManager.instance) {
@@ -17,76 +30,51 @@ class SoundManager {
     return SoundManager.instance;
   }
 
-  public playAmbience(soundPath: string): void {
-    // Stop current ambience if playing
-    if (this.currentAmbience) {
-      this.currentAmbience.stop();
+  private async loadSound(url: string): Promise<AudioBuffer> {
+    try {
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      return this.audioContext.decodeAudioData(arrayBuffer);
+    } catch (error) {
+      console.error('Error loading sound:', error);
+      throw error;
     }
-
-    // Create new sound
-    this.currentAmbience = new Howl({
-      src: [soundPath],
-      volume: soundPath.includes('Birds Chirp') ? this.birdsChirpVolume : this.rainVolume,
-      loop: soundPath.includes('Rain and thunder'), // Loop only rain and thunder
-      fade: true
-    });
-
-    // Fade in the new sound
-    this.currentAmbience.fade(0, soundPath.includes('Birds Chirp') ? this.birdsChirpVolume : this.rainVolume, 2000);
-    this.currentAmbience.play();
   }
 
-  private crossfade(): void {
-    if (!this.currentAmbience || !this.nextAmbience) return;
+  public async playAmbience(soundPath: string): Promise<void> {
+    try {
+      // ALWAYS stop any playing sounds first
+      this.stop();
 
-    const startTime = Date.now();
-    const fadeOutInterval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / this.crossfadeDuration, 1);
-
-      if (this.currentAmbience) {
-        const currentVolume = this.currentAmbience._src.includes('Birds Chirp') ? this.birdsChirpVolume : this.rainVolume;
-        this.currentAmbience.volume(currentVolume * (1 - progress));
-      }
-      if (this.nextAmbience) {
-        const nextVolume = this.nextAmbience._src.includes('Birds Chirp') ? this.birdsChirpVolume : this.rainVolume;
-        this.nextAmbience.volume(nextVolume * progress);
-      }
-
-      if (progress >= 1) {
-        clearInterval(fadeOutInterval);
-        if (this.currentAmbience) {
-          this.currentAmbience.stop();
-        }
-        this.currentAmbience = this.nextAmbience;
-        this.nextAmbience = null;
-      }
-    }, 16); // ~60fps
-  }
-
-  private fadeIn(sound: Howl, targetVolume: number): void {
-    const startTime = Date.now();
-    const fadeInInterval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / this.crossfadeDuration, 1);
-
-      sound.volume(targetVolume * progress);
-
-      if (progress >= 1) {
-        clearInterval(fadeInInterval);
-      }
-    }, 16);
+      const buffer = await this.loadSound(soundPath);
+      this.source1 = this.audioContext.createBufferSource();
+      this.source1.buffer = buffer;
+      this.source1.connect(this.gainNode1);
+      // Always loop ambient sounds
+      this.source1.loop = true;
+      
+      const targetVolume = soundPath.includes('Birds Chirp') ? this.birdsChirpVolume : this.rainVolume;
+      this.gainNode1.gain.setValueAtTime(targetVolume, this.audioContext.currentTime);
+      
+      this.source1.start();
+      this.currentSound = soundPath;
+    } catch (error) {
+      console.error('Error playing ambience:', error);
+    }
   }
 
   public stop(): void {
-    if (this.currentAmbience) {
-      this.currentAmbience.stop();
-      this.currentAmbience = null;
+    if (this.source1) {
+      this.source1.stop();
+      this.source1 = null;
     }
-    if (this.nextAmbience) {
-      this.nextAmbience.stop();
-      this.nextAmbience = null;
+    if (this.source2) {
+      this.source2.stop();
+      this.source2 = null;
     }
+    this.gainNode1.gain.setValueAtTime(0, this.audioContext.currentTime);
+    this.gainNode2.gain.setValueAtTime(0, this.audioContext.currentTime);
+    this.currentSound = null;
   }
 }
 
