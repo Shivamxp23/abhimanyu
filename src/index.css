@@ -22,6 +22,66 @@ button {
   cursor: pointer;
 }
 
+/* Music Player Styles */
+.progress-bar {
+  position: relative;
+  height: 16px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #000080;
+  position: relative;
+  transition: width 0.1s linear;
+}
+
+.progress-handle {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 20px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  cursor: pointer;
+}
+
+/* Minecraft Notification */
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.notification-enter {
+  animation: fadeInRight 0.3s ease forwards;
+}
+
+.notification-exit {
+  animation: fadeOutRight 0.3s ease forwards;
+}
+
 /* Windows 98 style scrollbar */
 ::-webkit-scrollbar {
   width: 16px;

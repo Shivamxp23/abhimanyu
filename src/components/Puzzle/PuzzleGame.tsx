@@ -1,13 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { usePuzzle } from '../../hooks/usePuzzle';
 import { useRandomImage } from '../../hooks/useRandomImage';
 import PuzzleBoard from './PuzzleBoard';
 import WindowFrame from '../UI/WindowFrame';
 import Button from '../UI/Button';
 import GameStatus from '../UI/GameStatus';
+import MusicPlayer from '../UI/MusicPlayer';
 import { RefreshCw, Play, RotateCcw, Lightbulb, X } from 'lucide-react';
 
 const PuzzleGame: React.FC = () => {
+  const musicPlayerRef = useRef<HTMLAudioElement>(null);
+  const [gameStarted, setGameStarted] = React.useState(false);
   const { imageUrl, isLoading, error, fetchRandomImage } = useRandomImage();
   const { 
     tiles, 
@@ -44,7 +47,30 @@ const PuzzleGame: React.FC = () => {
   const handleStartGame = () => {
     if (imageUrl) {
       startGame();
+      // Start music and show notification
+      const audioElement = document.querySelector('audio');
+      if (audioElement) {
+        audioElement.play()
+          .then(() => {
+            const event = new CustomEvent('showNotification', {
+              detail: { 
+                message: 'The game begins! 🎮 Let the music guide you...', 
+                emoji: '🎵' 
+              }
+            });
+            window.dispatchEvent(event);
+          })
+          .catch(err => console.error('Failed to play audio:', err));
+      }
     }
+  };
+
+  const handleMusicPlay = () => {
+    console.log('Music started playing');
+  };
+
+  const handleMusicPause = () => {
+    console.log('Music paused');
   };
 
   return (
@@ -131,12 +157,15 @@ const PuzzleGame: React.FC = () => {
           )}
         </div>
         
-        {/* Game Status */}
-        <GameStatus 
-          moves={moves} 
-          elapsedTime={elapsedTime} 
-          isCompleted={isCompleted}
-        />
+        {/* Game Status and Music Player in a row */}
+        <div className="flex items-center justify-between gap-4">
+          <GameStatus 
+            moves={moves} 
+            elapsedTime={elapsedTime} 
+            isCompleted={isCompleted}
+          />
+          <MusicPlayer onPlay={handleMusicPlay} onPause={handleMusicPause} />
+        </div>
       </div>
     </WindowFrame>
   );

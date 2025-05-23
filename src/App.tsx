@@ -1,5 +1,7 @@
 import PuzzleGame from './components/Puzzle/PuzzleGame';
+import Notification from './components/UI/Notification';
 import { Monitor, Folder, Globe, Trash2, HardDrive, Files, User2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const DesktopIcon = ({ icon: Icon, label }: { icon: any, label: string }) => (
   <div className="flex flex-col items-center gap-0.5 cursor-pointer select-none group mb-0.5 scale-75">
@@ -11,6 +13,45 @@ const DesktopIcon = ({ icon: Icon, label }: { icon: any, label: string }) => (
 );
 
 function App() {
+  const [notification, setNotification] = useState({
+    show: false,
+    message: '',
+    emoji: ''
+  });
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Add event listener for custom notifications
+  useEffect(() => {
+    const handleNotification = (event: any) => {
+      setNotification({
+        show: true,
+        message: event.detail.message,
+        emoji: event.detail.emoji
+      });
+    };
+
+    window.addEventListener('showNotification', handleNotification);
+    return () => window.removeEventListener('showNotification', handleNotification);
+  }, []);
+
+  const handleMusicPlay = () => {
+    setIsPlaying(true);
+    setNotification({
+      show: true,
+      message: 'Now playing: Jhol',
+      emoji: '🎵'
+    });
+  };
+
+  const handleMusicPause = () => {
+    setIsPlaying(false);
+    setNotification({
+      show: true,
+      message: 'Music paused',
+      emoji: '⏸️'
+    });
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Bliss Wallpaper Background */}
@@ -36,12 +77,26 @@ function App() {
           <PuzzleGame />
         </main>
 
+        {/* Notification */}
+        <Notification 
+          message={notification.message}
+          emoji={notification.emoji}
+          show={notification.show}
+        />
+
         {/* Taskbar */}
-        <div className="fixed bottom-0 left-0 right-0 h-8 bg-[#c0c0c0] border-t-[1px] border-white flex items-center px-1 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#ffffff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf]">
+        <div className="fixed bottom-0 left-0 right-0 h-8 bg-[#c0c0c0] border-t-[1px] border-white flex items-center justify-between px-1 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#ffffff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf]">
           <button className="px-3 py-0.5 text-xs font-bold bg-[#c0c0c0] border-solid border-[1px] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#0a0a0a,inset_-2px_-2px_#dfdfdf,inset_2px_2px_#808080] active:shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#ffffff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] flex items-center gap-2">
             <div className="w-3 h-3 bg-[#000080] text-white flex items-center justify-center font-bold text-[10px]">W</div>
             Start
           </button>
+          
+          {isPlaying && (
+            <div className="flex items-center gap-2 px-2 py-0.5 text-xs bg-[#000080] text-white">
+              <span className="animate-pulse">♪</span>
+              <span>Playing: Jhol</span>
+            </div>
+          )}
         </div>
 
         {/* Mobile Warning Message */}
