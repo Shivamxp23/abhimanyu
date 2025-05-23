@@ -13,26 +13,25 @@ const GameStatus: React.FC<GameStatusProps> = ({ moves, elapsedTime, isCompleted
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
   
   return (
-    <div className="flex flex-col bg-gray-300 border px-2 py-1.5 text-sm border-solid border-[1.5px] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#0a0a0a,inset_-2px_-2px_#dfdfdf,inset_2px_2px_#808080]">
+    <div className="flex flex-col bg-[#c0c0c0] border-[1px] border-solid px-2 py-1.5 text-sm border-t-[#808080] border-l-[#808080] border-r-white border-b-white">
       <div className="flex justify-between items-center mb-1">
         <span className="font-bold">Moves:</span>
-        <span>{moves}</span>
+        <span className="bg-black text-[#00ff00] px-2 font-mono">{moves}</span>
       </div>
       <div className="flex justify-between items-center">
         <span className="font-bold">Time:</span>
-        <span>{formatTime(elapsedTime)}</span>
+        <span className="bg-black text-[#00ff00] px-2 font-mono">{formatTime(elapsedTime)}</span>
       </div>
       {solution.isShowingSolution && (
         <div className="mt-2">
-          <div className="bg-[#000080] text-white font-bold py-1 mb-1 text-center">
+          <div className="bg-[#000080] text-white font-bold py-1 mb-1 text-center border border-solid border-t-[#1084d0] border-l-[#1084d0] border-r-[#000040] border-b-[#000040]">
             Solving Puzzle...
           </div>
-          <div className="text-center py-1">
+          <div className="text-center py-1 bg-[#c0c0c0] border border-solid border-t-[#808080] border-l-[#808080] border-r-white border-b-white">
             <div className="text-xs font-bold">
               Step {solution.currentStep + 1} of {solution.path.length}
             </div>
@@ -47,13 +46,13 @@ const GameStatus: React.FC<GameStatusProps> = ({ moves, elapsedTime, isCompleted
               )}
             </div>
           </div>
-          <div className="bg-white mt-1 p-2 max-h-32 overflow-y-auto">
+          <div className="bg-white mt-1 p-2 max-h-32 overflow-y-auto border border-solid border-t-[#808080] border-l-[#808080] border-r-white border-b-white">
             {solution.path.map((step, index) => (
               <div 
                 key={index} 
-                className={`text-xs mb-1.5 p-1 rounded ${
+                className={`text-xs mb-1.5 p-1 ${
                   index === solution.currentStep 
-                    ? 'bg-blue-100 font-bold border border-blue-300' 
+                    ? 'bg-[#000080] text-white font-bold' 
                     : index < solution.currentStep 
                     ? 'text-gray-500 line-through' 
                     : ''
@@ -66,7 +65,7 @@ const GameStatus: React.FC<GameStatusProps> = ({ moves, elapsedTime, isCompleted
         </div>
       )}
       {isCompleted && (
-        <div className="mt-2 text-center py-1 bg-[#000080] text-white font-bold">
+        <div className="mt-2 text-center py-1 bg-[#000080] text-white font-bold border border-solid border-t-[#1084d0] border-l-[#1084d0] border-r-[#000040] border-b-[#000040]">
           Puzzle Solved!
         </div>
       )}

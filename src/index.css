@@ -1,3 +1,60 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'VT323', monospace;
+  /* Classic windows pattern */
+  background-image: repeating-linear-gradient(
+    45deg,
+    #008080 0px,
+    #008080 2px,
+    #007070 2px,
+    #007070 4px
+  );
+  overflow: hidden;
+  cursor: default;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Windows 98 style scrollbar */
+::-webkit-scrollbar {
+  width: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: #c0c0c0;
+  border-left: 1px solid #808080;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border: 1px solid;
+  border-color: #dfdfdf #808080 #808080 #dfdfdf;
+  box-shadow: inset 1px 1px #ffffff, inset -1px -1px #0a0a0a;
+}
+
+::-webkit-scrollbar-button:single-button {
+  background: #c0c0c0;
+  border: 1px solid;
+  border-color: #dfdfdf #808080 #808080 #dfdfdf;
+  box-shadow: inset 1px 1px #ffffff, inset -1px -1px #0a0a0a;
+  height: 16px;
+}
+
+::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8'><path d='M4 5L6 3H2z' fill='black'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8'><path d='M4 3L6 5H2z' fill='black'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+}

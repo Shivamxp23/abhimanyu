@@ -16,27 +16,35 @@ const WindowFrame: React.FC<WindowFrameProps> = ({
 }) => {
   return (
     <div 
-      className={`flex flex-col rounded shadow-md overflow-hidden border border-gray-400 ${className}`}
+      className={`flex flex-col rounded-none border-solid border-[1px] border-[#dfdfdf] shadow-[2px_2px_4px_rgba(0,0,0,0.5)] ${className}`}
       style={style}
     >
       {/* Title Bar */}
-      <div className="flex items-center justify-between bg-gradient-to-r from-[#000080] to-[#1084d0] px-2 py-1">
-        <span className="text-white text-sm font-bold truncate mr-4">{title}</span>
+      <div className="flex items-center justify-between bg-gradient-to-r from-[#000080] to-[#1084d0] px-2 py-1 border border-solid border-[#dfdfdf] select-none">
+        <div className="flex items-center gap-2">
+          <img 
+            src="/favicon.ico" 
+            alt="icon" 
+            className="w-4 h-4"
+            style={{ imageRendering: 'pixelated' }}
+          />
+          <span className="text-white text-sm font-bold truncate mr-4">{title}</span>
+        </div>
         <div className="flex items-center space-x-1">
-          <button className="flex items-center justify-center w-4 h-4 bg-gray-300 hover:bg-gray-400 border border-gray-400 rounded-sm">
-            <Minus size={8} className="text-black" />
+          <button className="w-[18px] h-[18px] flex items-center justify-center bg-[#c0c0c0] hover:bg-[#dfdfdf] border border-solid border-t-white border-l-white border-r-[#808080] border-b-[#808080] active:border-t-[#808080] active:border-l-[#808080] active:border-r-white active:border-b-white">
+            <Minus size={10} className="text-black -mt-1" />
           </button>
-          <button className="flex items-center justify-center w-4 h-4 bg-gray-300 hover:bg-gray-400 border border-gray-400 rounded-sm">
-            <Square size={8} className="text-black" />
+          <button className="w-[18px] h-[18px] flex items-center justify-center bg-[#c0c0c0] hover:bg-[#dfdfdf] border border-solid border-t-white border-l-white border-r-[#808080] border-b-[#808080] active:border-t-[#808080] active:border-l-[#808080] active:border-r-white active:border-b-white">
+            <Square size={10} className="text-black" />
           </button>
-          <button className="flex items-center justify-center w-4 h-4 bg-red-500 hover:bg-red-600 border border-gray-400 rounded-sm">
-            <X size={8} className="text-white" />
+          <button className="w-[18px] h-[18px] flex items-center justify-center bg-[#c0c0c0] hover:bg-red-600 hover:text-white border border-solid border-t-white border-l-white border-r-[#808080] border-b-[#808080] active:border-t-[#808080] active:border-l-[#808080] active:border-r-white active:border-b-white">
+            <X size={12} className="text-black hover:text-white" />
           </button>
         </div>
       </div>
       
-      {/* Window Content */}
-      <div className="flex-1 bg-gray-200 p-2">
+      {/* Window Content with classic Windows border effect */}
+      <div className="flex-1 bg-[#c0c0c0] p-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white border-[1px] border-solid">
         {children}
       </div>
     </div>
