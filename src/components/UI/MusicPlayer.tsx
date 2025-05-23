@@ -13,6 +13,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
   const [currentSong, setCurrentSong] = useState("Jhol.mp3");
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
+  const [songHistory, setSongHistory] = useState<string[]>([]);
 
   const songs = [
     "Jhol.mp3",
@@ -67,6 +68,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
 
   const handleSongEnd = () => {
     const nextSong = playRandomSong();
+    setSongHistory(prev => [...prev, currentSong]);
     setCurrentSong(nextSong);
     if (audioRef.current) {
       audioRef.current.src = `/music/${nextSong}`;
@@ -130,6 +132,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
   const handleSkipForward = () => {
     if (audioRef.current) {
       const nextSong = playRandomSong();
+      setSongHistory(prev => [...prev, currentSong]);
       setCurrentSong(nextSong);
       audioRef.current.src = `/music/${nextSong}`;
       playAudio(audioRef.current);
@@ -144,13 +147,15 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
         audioRef.current.currentTime -= 10;
       } else {
         // If less than 10 seconds have passed, go to the previous song
-        const currentIndex = songs.indexOf(currentSong);
-        const prevIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
-        const prevSong = songs[prevIndex];
-        setCurrentSong(prevSong);
-        audioRef.current.src = `/music/${prevSong}`;
-        playAudio(audioRef.current);
-        showNowPlayingNotification(prevSong);
+        if (songHistory.length > 0) {
+          const prevSong = songHistory[songHistory.length - 1];
+          setSongHistory(prev => prev.slice(0, -1));
+          setCurrentSong(prevSong);
+          audioRef.current.src = `/music/${prevSong}`;
+          playAudio(audioRef.current);
+          showNowPlayingNotification(prevSong);
+        }
+        // If no history, do nothing
       }
     }
   };
