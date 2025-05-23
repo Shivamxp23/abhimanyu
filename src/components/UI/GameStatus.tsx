@@ -38,7 +38,10 @@ const GameStatus: React.FC<GameStatusProps> = ({ moves, elapsedTime, isCompleted
             </div>
             <div className="text-xs mt-1">
               {solution.currentStep < solution.path.length ? (
-                <>Move tile {solution.moves[solution.currentStep]} {solution.path[solution.currentStep]?.toLowerCase()}</>
+                <>
+                  <span className="font-bold">Current Move: </span>
+                  Move tile #{solution.moves[solution.currentStep]} {solution.path[solution.currentStep]?.toLowerCase()}
+                </>
               ) : (
                 'Complete!'
               )}
@@ -48,9 +51,15 @@ const GameStatus: React.FC<GameStatusProps> = ({ moves, elapsedTime, isCompleted
             {solution.path.map((step, index) => (
               <div 
                 key={index} 
-                className={`text-xs mb-1 ${index === solution.currentStep ? 'bg-blue-100 font-bold' : index < solution.currentStep ? 'text-gray-500' : ''}`}
+                className={`text-xs mb-1.5 p-1 rounded ${
+                  index === solution.currentStep 
+                    ? 'bg-blue-100 font-bold border border-blue-300' 
+                    : index < solution.currentStep 
+                    ? 'text-gray-500 line-through' 
+                    : ''
+                }`}
               >
-                {index + 1}. Move tile {solution.moves[index]} {step.toLowerCase()}
+                {index + 1}. Move tile #{solution.moves[index]} {step.toLowerCase()}
               </div>
             ))}
           </div>

@@ -62,7 +62,7 @@ isProcessingMove.current = false;
 if (moveQueue.current.length > 0) {
 setTimeout(() => {
 processMoveQueue();
-}, 350);
+}, 800); // Increased delay to 800ms
 }
 } catch (error) {
 console.error('Error processing move:', error);
@@ -84,12 +84,25 @@ reject(new Error('Invalid move'));
 return;
 }
 
+const tileToMove = tiles.find(t => t.currentIndex === tileIndex);
+if (!tileToMove) {
+reject(new Error('No tile at specified position'));
+return;
+}
+
 setIsAnimating(true);
 
+// For debugging solution moves
+if (solution.isShowingSolution) {
+const expectedTileId = solution.moves[solution.currentStep];
+console.log(`Moving tile #${tileToMove.id} from position ${tileToMove.currentIndex} to ${emptyTile.currentIndex}`);
+console.log(`Expected tile for this step: #${expectedTileId}`);
+}
+
 const updatedTiles = tiles.map(t => {
-if (t.currentIndex === tileIndex) return { ...t, currentIndex: emptyTile.currentIndex };
-if (t.isEmpty) return { ...t, currentIndex: tileIndex };
-return t;
+  if (t.currentIndex === tileIndex) return { ...t, currentIndex: emptyTile.currentIndex };
+  if (t.isEmpty) return { ...t, currentIndex: tileIndex };
+  return t;
 });
 
 setTiles(updatedTiles);
@@ -121,7 +134,7 @@ processMoveQueue();
 
 // Handle keyboard navigation
 const handleKeyDown = useCallback((e: KeyboardEvent) => {
-if (!isPlaying || isCompleted || solution.isShowingSolution || isAnimating) return;
+if (!isPlaying || isCompleted || isAnimating) return;
 
 const emptyTile = tiles.find(t => t.isEmpty);
 if (!emptyTile) return;
@@ -151,45 +164,81 @@ queueMove(tileToMove);
 }
 }, [tiles, isPlaying, isCompleted, solution.isShowingSolution, isAnimating, queueMove]);
 
+// Stop showing solution
+const stopSolution = useCallback(() => {
+  console.log('Stopping solution');
+  setSolution(prev => ({ ...prev, isShowingSolution: false }));
+  moveQueue.current = []; // Clear the move queue
+  isProcessingMove.current = false;
+}, []);
+
 const showSolution = useCallback(() => {
-if (!isPlaying || isCompleted) return;
+  console.log('showSolution called, game state:', { isPlaying, isCompleted });
+  if (!isPlaying || isCompleted) return;
 
-const solutionResult = findSolution(tiles);
-if (!solutionResult.path.length) return;
+  const currentTiles = [...tiles];
+  const solutionResult = findSolution(currentTiles);
+  console.log('Solution found:', solutionResult);
+  
+  if (!solutionResult.path.length) {
+    console.log('No solution path found');
+    return;
+  }
 
-console.log('Starting solution with steps:', solutionResult.path.length);
+  console.log('Starting solution with steps:', solutionResult.path.length);
 
-setSolution({
-moves: solutionResult.moves,
-path: solutionResult.path,
-currentStep: 0,
-isShowingSolution: true
-});
+  setSolution({
+    moves: solutionResult.moves,
+    path: solutionResult.path,
+    currentStep: 0,
+    isShowingSolution: true
+  });
 
-// Clear existing moves
-moveQueue.current = [];
+  // Convert solution directions to keyboard events
+  let currentStep = 0;
 
-// Queue up solution moves
-solutionResult.path.forEach((direction, index) => {
-moveQueue.current.push(async () => {
-const currentEmptyTile = tiles.find(t => t.isEmpty);
-if (!currentEmptyTile) return;
+  const simulateNextMove = () => {
+    if (currentStep >= solutionResult.path.length) {
+      stopSolution();
+      return;
+    }
 
-const tileToMoveIndex = getTileToMove(currentEmptyTile.currentIndex, direction);
-if (tileToMoveIndex >= 0 && tileToMoveIndex < PUZZLE_CONSTANTS.TOTAL_TILES) {
-console.log(`Executing move ${index + 1}`);
-await moveTileWithAnimation(tileToMoveIndex);
-setSolution(prev => ({
-...prev,
-currentStep: index + 1
-}));
-}
-});
-});
+    const direction = solutionResult.path[currentStep];
+    let key = '';
+    
+    // Convert direction to arrow key
+    switch (direction) {
+      case 'UP': key = 'ArrowUp'; break;
+      case 'DOWN': key = 'ArrowDown'; break;
+      case 'LEFT': key = 'ArrowLeft'; break;
+      case 'RIGHT': key = 'ArrowRight'; break;
+    }
 
-// Kick off the first move
-processMoveQueue();
-}, [tiles, isPlaying, isCompleted, moveTileWithAnimation, processMoveQueue]);
+    // Simulate keyboard event
+    const event = new KeyboardEvent('keydown', {
+      key: key,
+      code: key,
+      bubbles: true
+    });
+    
+    window.dispatchEvent(event);
+    currentStep++;
+
+    // Schedule next move after animation
+    setTimeout(() => {
+      setSolution(prev => ({
+        ...prev,
+        currentStep: currentStep
+      }));
+      simulateNextMove();
+    }, 800); // Match the move animation delay
+  };
+
+  // Start the solution sequence after a short delay
+  setTimeout(() => {
+    simulateNextMove();
+  }, 100);
+}, [tiles, isPlaying, isCompleted, solution.isShowingSolution, moveTileWithAnimation, processMoveQueue, stopSolution]);
 
 // Start the game and timer
 const startGame = useCallback(() => {
@@ -241,12 +290,6 @@ const moveTile = useCallback((tileIndex: number) => {
 if (!isPlaying || isCompleted || isAnimating) return;
 queueMove(tileIndex);
 }, [isPlaying, isCompleted, isAnimating, queueMove]);
-
-// Stop showing solution
-const stopSolution = useCallback(() => {
-setSolution(prev => ({ ...prev, isShowingSolution: false }));
-moveQueue.current = []; // Clear the move queue
-}, []);
 
 // Clean up on unmount
 useEffect(() => {

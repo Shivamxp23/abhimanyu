@@ -138,19 +138,6 @@ const PuzzleGame: React.FC = () => {
           isCompleted={isCompleted}
           solution={solution}
         />
-        
-        {/* Instructions */}
-        <div className="text-xs bg-white p-2 border border-gray-400">
-          <p className="font-bold mb-1">How to play:</p>
-          <ul className="list-disc pl-4 space-y-1">
-            <li>Click "New Game" to get a new random image</li>
-            <li>Click "Start" to scramble the puzzle</li>
-            <li>Click tiles adjacent to the empty space to move them</li>
-            <li>Use arrow keys to move tiles</li>
-            <li>Click "Solve" to see the solution steps</li>
-            <li>Arrange the tiles to match the original image</li>
-          </ul>
-        </div>
       </div>
     </WindowFrame>
   );
