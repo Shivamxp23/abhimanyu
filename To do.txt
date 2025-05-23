@@ -12,9 +12,10 @@ Upon clicking exit button, flash "No way out, Abhimanyu"
 
 Add sound effects too, first it is peachy sunshine birds chirping feel good sounds. Keep it getting darker as and how he dives let one particular song start as user starts to play the game.
 
-Dont show "Now Playing" notifs if the user paused the song and then played it themselves
 
 cd "C:\Users\soni8\Desktop\everything\University 2.0\Project(s)\1_Working on\abhimanyu"
 git add .
-git commit -m "Added buttons to skip song or rewind or go back"
+git commit -m "Fixed random backwards shuffle"
 git push origin main
+
+Added rain effect in rain branch
