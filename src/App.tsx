@@ -43,6 +43,11 @@ function App() {
             Start
           </button>
         </div>
+
+        {/* Mobile Warning Message */}
+        <div className="fixed inset-0 bg-black text-red-500 font-bold text-center p-4 flex items-center justify-center lg:hidden md:hidden sm:landscape:hidden">
+          Best experienced on a bigger screen like a laptop or tablet
+        </div>
       </div>
     </div>
   );
