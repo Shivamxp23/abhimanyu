@@ -1,38 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 
 interface MusicPlayerProps {
-  onPlay: () => void;
-  onPause: () => void;
+  onPlay?: () => void;
+  onPause?: () => void;
 }
 
 const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [currentSong, setCurrentSong] = useState('Jhol.mp3');
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const progressRef = useRef<HTMLDivElement | null>(null);
-  const wasPlayingRef = useRef(false);
+  const [currentSong, setCurrentSong] = useState("Jhol.mp3");
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
 
   const songs = [
-    'Baarish Yaariyan.mp3',
-    'INTENTIONS.mp3',
-    'ENDS.mp3',
-    'AWAY FROM ME.mp3',
-    'Kyun.mp3',
-    'Downers At Dusk.mp3',
-    'Lost In Time.mp3',
-    'Glass Half Full.mp3',
-    'Kammo ji.mp3',
-    'Hoke Tetho Door Mai.mp3',
-    'Jhol.mp3'
+    "Jhol.mp3",
+    "Baarish Yaariyan.mp3",
+    "INTENTIONS.mp3",
+    "ENDS.mp3",
+    "AWAY FROM ME.mp3",
+    "Kyun.mp3",
+    "Downers At Dusk.mp3",
+    "Lost In Time.mp3",
+    "Glass Half Full.mp3",
+    "Kammo ji.mp3",
+    "Hoke Tetho Door Mai.mp3"
   ];
 
   const showNowPlayingNotification = (songName: string) => {
     // Skip notification for the first song (Jhol.mp3)
     if (songName === 'Jhol.mp3') {
-      console.log('Skipping notification for Jhol.mp3');
       return;
     }
     
@@ -52,56 +50,28 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
     return availableSongs[randomIndex];
   };
 
-  const handleSongEnd = () => {
-    console.log('Song ended, playing next song...');
-    const nextSong = playRandomSong();
-    console.log('Next song:', nextSong);
-    setCurrentSong(nextSong);
-    
-    // Force play the next song
-    if (audioRef.current) {
-      audioRef.current.src = `/music/${nextSong}`;
-      audioRef.current.load(); // Ensure the new source is loaded
-      
-      // Use a small timeout to ensure the audio is loaded
-      setTimeout(() => {
-        if (audioRef.current) {
-          console.log('Attempting to play next song...');
-          audioRef.current.play()
-            .then(() => {
-              console.log('Successfully started playing next song');
-              setIsPlaying(true);
-              wasPlayingRef.current = true;
-              onPlay();
-              showNowPlayingNotification(nextSong);
-            })
-            .catch(error => {
-              console.error('Error playing next song:', error);
-            });
-        }
-      }, 100);
+  const playAudio = async (audio: HTMLAudioElement) => {
+    try {
+      // Only load if the source has changed
+      if (audio.dataset.lastSrc !== audio.src) {
+        await audio.load();
+        audio.dataset.lastSrc = audio.src;
+      }
+      await audio.play();
+      setIsPlaying(true);
+      onPlay?.();
+    } catch (err) {
+      console.error('Failed to play audio:', err);
     }
   };
 
-  const togglePlay = () => {
+  const handleSongEnd = () => {
+    const nextSong = playRandomSong();
+    setCurrentSong(nextSong);
     if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        onPause();
-        wasPlayingRef.current = false;
-        setIsPlaying(false);
-      } else {
-        audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-            wasPlayingRef.current = true;
-            onPlay();
-            showNowPlayingNotification(currentSong);
-          })
-          .catch(error => {
-            console.error('Error playing audio:', error);
-          });
-      }
+      audioRef.current.src = `/music/${nextSong}`;
+      playAudio(audioRef.current);
+      showNowPlayingNotification(nextSong);
     }
   };
 
@@ -112,185 +82,170 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
   };
 
   const handleLoadedMetadata = () => {
-    console.log('Audio metadata loaded');
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
-      if (wasPlayingRef.current) {
-        console.log('Resuming playback after loading metadata');
-        audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-            onPlay();
-            showNowPlayingNotification(currentSong);
-          })
-          .catch(error => {
-            console.error('Error resuming playback:', error);
-          });
-      }
-    }
-  };
-
-  // Add effect to sync with audio element's playing state
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handlePlay = () => {
-      console.log('Play event triggered');
-      setIsPlaying(true);
-      wasPlayingRef.current = true;
-    };
-    const handlePause = () => {
-      console.log('Pause event triggered');
-      setIsPlaying(false);
-      wasPlayingRef.current = false;
-    };
-    const handleEnded = () => {
-      console.log('Ended event triggered');
-      handleSongEnd();
-    };
-
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
-    audio.addEventListener('ended', handleEnded);
-
-    return () => {
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
-      audio.removeEventListener('ended', handleEnded);
-    };
-  }, [currentSong]);
-
-  // Add effect to handle initial song
-  useEffect(() => {
-    // Skip notification for initial Jhol.mp3
-    if (currentSong === 'Jhol.mp3') {
-      console.log('Initial song is Jhol.mp3, skipping notification');
-      return;
-    }
-  }, []);
-
-  const updateAudioTime = (clientX: number) => {
-    if (progressRef.current && audioRef.current) {
-      const rect = progressRef.current.getBoundingClientRect();
-      const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-      const percentage = x / rect.width;
-      const newTime = percentage * duration;
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
     }
   };
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    updateAudioTime(e.clientX);
-    // Resume playback if it was playing before
-    if (audioRef.current && wasPlayingRef.current) {
-      audioRef.current.play()
-        .then(() => {
-          setIsPlaying(true);
-          onPlay();
-          // Don't show notification when resuming after seeking
-          if (currentSong !== 'Jhol.mp3' && !wasPlayingRef.current) {
-            showNowPlayingNotification(currentSong);
-          }
-        })
-        .catch(error => {
-          console.error('Error resuming playback after click:', error);
-        });
-    }
-  };
-
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    updateAudioTime(e.clientX);
-    if (audioRef.current && isPlaying) {
+    if (!audioRef.current || !progressRef.current) return;
+    
+    const rect = progressRef.current.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    const wasPlaying = isPlaying;
+    
+    // Pause if playing
+    if (wasPlaying) {
       audioRef.current.pause();
     }
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      updateAudioTime(e.clientX);
+    
+    // Update position
+    audioRef.current.currentTime = pos * audioRef.current.duration;
+    
+    // Resume if it was playing
+    if (wasPlaying) {
+      playAudio(audioRef.current);
     }
   };
 
-  const handleMouseUp = () => {
-    if (isDragging) {
-      setIsDragging(false);
-      if (audioRef.current && wasPlayingRef.current) {
-        audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-            onPlay();
-            // Don't show notification when resuming after seeking
-            if (currentSong !== 'Jhol.mp3' && !wasPlayingRef.current) {
-              showNowPlayingNotification(currentSong);
-            }
-          })
-          .catch(error => {
-            console.error('Error resuming playback after drag:', error);
-          });
-      }
-    }
-  };
-
-  // Add and remove mouse event listeners
-  useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, isPlaying]);
-
-  const formatTime = (time: number): string => {
+  const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        onPause?.();
+        setIsPlaying(false);
+      } else {
+        playAudio(audioRef.current);
+        showNowPlayingNotification(currentSong);
+      }
+    }
+  };
+
+  const handleSkipForward = () => {
+    if (audioRef.current) {
+      const nextSong = playRandomSong();
+      setCurrentSong(nextSong);
+      audioRef.current.src = `/music/${nextSong}`;
+      playAudio(audioRef.current);
+      showNowPlayingNotification(nextSong);
+    }
+  };
+
+  const handleSkipBackward = () => {
+    if (audioRef.current) {
+      // Go back 10 seconds if more than 10 seconds have passed
+      if (audioRef.current.currentTime > 10) {
+        audioRef.current.currentTime -= 10;
+      } else {
+        // If less than 10 seconds have passed, go to the previous song
+        const currentIndex = songs.indexOf(currentSong);
+        const prevIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
+        const prevSong = songs[prevIndex];
+        setCurrentSong(prevSong);
+        audioRef.current.src = `/music/${prevSong}`;
+        playAudio(audioRef.current);
+        showNowPlayingNotification(prevSong);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.addEventListener('timeupdate', handleTimeUpdate);
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.addEventListener('ended', handleSongEnd);
+      audio.addEventListener('play', () => setIsPlaying(true));
+      audio.addEventListener('pause', () => setIsPlaying(false));
+    }
+
+    return () => {
+      if (audio) {
+        audio.removeEventListener('timeupdate', handleTimeUpdate);
+        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        audio.removeEventListener('ended', handleSongEnd);
+        audio.removeEventListener('play', () => setIsPlaying(true));
+        audio.removeEventListener('pause', () => setIsPlaying(false));
+      }
+    };
+  }, []);
+
+  // Add keyboard event listener for spacebar
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Only trigger if spacebar is pressed and not in an input field
+      if (e.code === 'Space' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault(); // Prevent page scroll
+        togglePlay();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isPlaying]); // Add isPlaying to dependencies since togglePlay uses it
+
   return (
-    <div className="flex items-center gap-4 w-full max-w-[632px] mt-4">
+    <div className="relative w-full max-w-md">
       <audio
         ref={audioRef}
         src={`/music/${currentSong}`}
-        onTimeUpdate={handleTimeUpdate}
+        onEnded={handleSongEnd}
         onLoadedMetadata={handleLoadedMetadata}
       />
-      
-      <button
-        onClick={togglePlay}
-        className="text-black hover:text-gray-700 transition-colors"
-      >
-        {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-      </button>
 
-      {/* Minimalist Progress Bar */}
-      <div className="flex-1 relative group">
-        {/* Song name display */}
-        <div className="absolute -top-6 left-0 text-sm text-black/70 font-medium">
-          {currentSong.replace('.mp3', '')}
-        </div>
+      {/* Song Name */}
+      <div className="text-sm text-gray-600 mb-1">
+        {currentSong.replace('.mp3', '')}
+      </div>
 
+      {/* Controls and Progress */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={togglePlay}
+          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+        </button>
+        
         <div 
           ref={progressRef}
+          className="flex-1 h-1 bg-gray-200 rounded-full cursor-pointer"
           onClick={handleProgressClick}
-          className="h-[1px] bg-black/30 cursor-pointer group-hover:bg-black/50 transition-colors"
         >
-          <div
-            className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-black rounded-full cursor-grab active:cursor-grabbing"
-            style={{ left: `${(currentTime / duration) * 100}%` }}
-            onMouseDown={handleMouseDown}
+          <div 
+            className="h-full bg-blue-500 rounded-full"
+            style={{ width: `${(currentTime / duration) * 100}%` }}
           />
         </div>
         
-        {/* Time display */}
-        <div className="absolute -top-6 right-0 text-[10px] text-black/70 font-mono">
+        <div className="text-xs text-gray-500 w-16 text-right">
           {formatTime(currentTime)} / {formatTime(duration)}
         </div>
+      </div>
+
+      {/* Skip Controls */}
+      <div className="flex items-center justify-between mt-2">
+        <button
+          onClick={handleSkipBackward}
+          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          title="Previous song or rewind 10 seconds"
+        >
+          <SkipBack size={16} />
+        </button>
+        
+        <button
+          onClick={handleSkipForward}
+          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          title="Next song"
+        >
+          <SkipForward size={16} />
+        </button>
       </div>
     </div>
   );

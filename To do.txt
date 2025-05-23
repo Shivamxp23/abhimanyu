@@ -16,5 +16,5 @@ Dont show "Now Playing" notifs if the user paused the song and then played it th
 
 cd "C:\Users\soni8\Desktop\everything\University 2.0\Project(s)\1_Working on\abhimanyu"
 git add .
-git commit -m "Added animation for new game or ending of puzzle"
+git commit -m "Added buttons to skip song or rewind or go back"
 git push origin main
