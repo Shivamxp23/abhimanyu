@@ -64,6 +64,10 @@ const PuzzleGame: React.FC = () => {
     if (imageUrl) {
       startGame();
       setGameStarted(true);
+      
+      // Dispatch gameStart event for background transition
+      window.dispatchEvent(new Event('gameStart'));
+
       // Fade out ambient sound and start game music
       if (ambientSoundRef.current) {
         const fadeOut = setInterval(() => {

@@ -21,5 +21,5 @@ Add illumination under the puzzle game box when it goes to dark mode.
 
 cd "C:\Users\soni8\Desktop\everything\University 2.0\Project(s)\1_Working on\abhimanyu"
 git add .
-git commit -m "added ambience"
+git commit -m "added background change"
 git push origin main

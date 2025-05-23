@@ -144,14 +144,20 @@ function App() {
     <div className="min-h-screen relative overflow-hidden">
       {/* Night Wallpaper Background - positioned behind */}
       <div
-        className={`fixed inset-0 bg-cover bg-center bg-no-repeat scale-100 transition-opacity duration-1500 ${isDarkMode ? 'opacity-100' : 'opacity-0'}`}
-        style={{ backgroundImage: 'url("/Windows Xp Bliss Wallpaper at night.png")' }}
+        className={`fixed inset-0 bg-cover bg-center bg-no-repeat scale-100 transition-all duration-[4500ms] ease-in-out ${isDarkMode ? 'opacity-100' : 'opacity-0'}`}
+        style={{ 
+          backgroundImage: 'url("/Windows Xp Bliss Wallpaper at night.png")',
+          transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
       />
 
       {/* Bliss Wallpaper Background - positioned in front and fades out */}
       <div 
-        className={`fixed inset-0 bg-cover bg-center bg-no-repeat scale-100 transition-opacity duration-1500 ${isDarkMode ? 'opacity-0' : 'opacity-100'}`}
-        style={{ backgroundImage: 'url("/Windows Xp Bliss Wallpaper HD.jpg")' }}
+        className={`fixed inset-0 bg-cover bg-center bg-no-repeat scale-100 transition-all duration-[4500ms] ease-in-out ${isDarkMode ? 'opacity-0' : 'opacity-100'}`}
+        style={{ 
+          backgroundImage: 'url("/Windows Xp Bliss Wallpaper HD.jpg")',
+          transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
       />
 
       <div className="relative min-h-screen flex flex-col items-center justify-center p-4">
