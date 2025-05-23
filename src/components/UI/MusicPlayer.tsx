@@ -53,9 +53,11 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
 
   const playAudio = async (audio: HTMLAudioElement) => {
     try {
-      // Always load the audio when playing
-      await audio.load();
-      audio.dataset.lastSrc = audio.src;
+      // Only load if the source has changed
+      if (audio.dataset.lastSrc !== audio.src) {
+        await audio.load();
+        audio.dataset.lastSrc = audio.src;
+      }
       await audio.play();
       setIsPlaying(true);
       onPlay?.();
@@ -65,14 +67,33 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
   };
 
   const handleSongEnd = async () => {
+    console.log('handleSongEnd called');
     const nextSong = playRandomSong();
     setSongHistory(prev => [...prev, currentSong]);
     setCurrentSong(nextSong);
+    
     if (audioRef.current) {
+      // Stop the current audio
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      
+      // Update the source and play
       audioRef.current.src = `/music/${nextSong}`;
+      
+      // Wait for the audio to be loaded
+      await new Promise((resolve) => {
+        audioRef.current!.addEventListener('canplaythrough', resolve, { once: true });
+        audioRef.current!.load();
+      });
+
       try {
-        await playAudio(audioRef.current);
-        showNowPlayingNotification(nextSong);
+        // Ensure we're still mounted and have a valid audio element
+        if (audioRef.current) {
+          await audioRef.current.play();
+          setIsPlaying(true);
+          onPlay?.();
+          showNowPlayingNotification(nextSong);
+        }
       } catch (err) {
         console.error('Failed to play next song:', err);
       }
@@ -81,7 +102,15 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
+      const currentTime = audioRef.current.currentTime;
+      const duration = audioRef.current.duration;
+      setCurrentTime(currentTime);
+
+      // Check if we're at the end of the song (within 0.1 seconds of the end)
+      if (duration - currentTime < 0.1 && isPlaying) {
+        console.log('Song ending detected in timeupdate');
+        handleSongEnd();
+      }
     }
   };
 
@@ -122,15 +151,21 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
         onPause?.();
         setIsPlaying(false);
       } else {
-        playAudio(audioRef.current);
-        showNowPlayingNotification(currentSong);
+        try {
+          await audioRef.current.play();
+          setIsPlaying(true);
+          onPlay?.();
+          showNowPlayingNotification(currentSong);
+        } catch (err) {
+          console.error('Failed to resume playback:', err);
+        }
       }
     }
   };
@@ -171,7 +206,10 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
     if (audio) {
       audio.addEventListener('timeupdate', handleTimeUpdate);
       audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.addEventListener('ended', handleSongEnd);
+      audio.addEventListener('ended', () => {
+        console.log('Song ended, playing next...');
+        handleSongEnd();
+      });
       audio.addEventListener('play', () => setIsPlaying(true));
       audio.addEventListener('pause', () => setIsPlaying(false));
     }
@@ -185,7 +223,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
         audio.removeEventListener('pause', () => setIsPlaying(false));
       }
     };
-  }, []);
+  }, [currentSong]); // Add currentSong to dependencies to ensure event listener is updated
 
   // Add keyboard event listener for spacebar
   useEffect(() => {
@@ -208,6 +246,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
         src={`/music/${currentSong}`}
         onEnded={handleSongEnd}
         onLoadedMetadata={handleLoadedMetadata}
+        preload="auto"
       />
 
       {/* Song Name */}
