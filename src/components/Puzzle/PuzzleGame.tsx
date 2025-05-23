@@ -65,8 +65,13 @@ const PuzzleGame: React.FC = () => {
       startGame();
       setGameStarted(true);
       
-      // Dispatch gameStart event for background transition
-      window.dispatchEvent(new Event('gameStart'));
+      // Dispatch gameStart event for background transition with custom data
+      window.dispatchEvent(new CustomEvent('gameStart', {
+        detail: {
+          message: 'The game begins! 🎮 Let the music guide you...',
+          emoji: '🎵'
+        }
+      }));
 
       // Fade out ambient sound and start game music
       if (ambientSoundRef.current) {
@@ -82,20 +87,10 @@ const PuzzleGame: React.FC = () => {
         }, 50);
       }
 
-      // Start music and show notification
+      // Start music
       const audioElement = document.querySelector('audio');
       if (audioElement) {
-        audioElement.play()
-          .then(() => {
-            const event = new CustomEvent('showNotification', {
-              detail: { 
-                message: 'The game begins! 🎮 Let the music guide you...', 
-                emoji: '🎵' 
-              }
-            });
-            window.dispatchEvent(event);
-          })
-          .catch(err => console.error('Failed to play audio:', err));
+        audioElement.play().catch(err => console.error('Failed to play audio:', err));
       }
     }
   };

@@ -39,6 +39,10 @@ function App() {
           message: 'Ambient sounds enabled',
           emoji: '🔊'
         });
+        // Clear notification after 5 seconds
+        setTimeout(() => {
+          setNotification(prev => ({ ...prev, show: false }));
+        }, 5000);
       } catch (error) {
         console.log('Audio autoplay failed:', error);
         setNotification({
@@ -46,6 +50,10 @@ function App() {
           message: 'Click anywhere to enable sounds',
           emoji: '🔇'
         });
+        // Clear notification after 5 seconds
+        setTimeout(() => {
+          setNotification(prev => ({ ...prev, show: false }));
+        }, 5000);
       }
     };
     playAudio();
@@ -60,6 +68,10 @@ function App() {
             message: 'Ambient sounds enabled',
             emoji: '🔊'
           });
+          // Clear notification after 5 seconds
+          setTimeout(() => {
+            setNotification(prev => ({ ...prev, show: false }));
+          }, 5000);
         } catch (error) {
           console.log('Audio playback failed:', error);
         }
@@ -91,36 +103,56 @@ function App() {
 
   // Listen for game start event
   useEffect(() => {
-    const handleGameStart = () => {
+    const handleGameStart = (event: CustomEvent) => {
+      console.log('Game start event received:', event.detail);
       setIsGameStarted(true);
-      // Start the dark mode transition
-      setTimeout(() => {
-        setIsDarkMode(true);
-        setNotification({
-          show: true,
-          message: 'Night falls...',
-          emoji: '🌙'
-        });
-      }, 500); // Delay dark mode transition by 500ms
-    };
-
-    window.addEventListener('gameStart', handleGameStart);
-    return () => window.removeEventListener('gameStart', handleGameStart);
-  }, []);
-
-  // Add event listener for custom notifications
-  useEffect(() => {
-    const handleNotification = (event: any) => {
+      
+      // Show notification with data from the event
       setNotification({
         show: true,
         message: event.detail.message,
         emoji: event.detail.emoji
       });
+
+      // Reset notification after 5 seconds
+      setTimeout(() => {
+        setNotification(prev => ({ ...prev, show: false }));
+      }, 5000);
+
+      // Start the dark mode transition
+      setTimeout(() => {
+        setIsDarkMode(true);
+      }, 500); // Delay dark mode transition by 500ms
     };
 
-    window.addEventListener('showNotification', handleNotification);
-    return () => window.removeEventListener('showNotification', handleNotification);
+    window.addEventListener('gameStart', handleGameStart as EventListener);
+    return () => window.removeEventListener('gameStart', handleGameStart as EventListener);
   }, []);
+
+  // Add event listener for custom notifications
+  useEffect(() => {
+    const handleNotification = (event: CustomEvent) => {
+      console.log('Notification event received:', event.detail);
+      setNotification({
+        show: true,
+        message: event.detail.message,
+        emoji: event.detail.emoji
+      });
+
+      // Reset notification after 5 seconds
+      setTimeout(() => {
+        setNotification(prev => ({ ...prev, show: false }));
+      }, 5000);
+    };
+
+    window.addEventListener('showNotification', handleNotification as EventListener);
+    return () => window.removeEventListener('showNotification', handleNotification as EventListener);
+  }, []);
+
+  // Debug notification state changes
+  useEffect(() => {
+    console.log('Notification state changed:', notification);
+  }, [notification]);
 
   const handleMusicPlay = () => {
     setIsPlaying(true);
@@ -144,7 +176,7 @@ function App() {
     <div className="min-h-screen relative overflow-hidden">
       {/* Night Wallpaper Background - positioned behind */}
       <div
-        className={`fixed inset-0 bg-cover bg-center bg-no-repeat scale-100 transition-all duration-[4500ms] ease-in-out ${isDarkMode ? 'opacity-100' : 'opacity-0'}`}
+        className={`fixed inset-0 bg-cover bg-center bg-no-repeat scale-100 transition-all duration-[10000ms] ease-in-out ${isDarkMode ? 'opacity-100' : 'opacity-0'}`}
         style={{ 
           backgroundImage: 'url("/Windows Xp Bliss Wallpaper at night.png")',
           transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
@@ -153,7 +185,7 @@ function App() {
 
       {/* Bliss Wallpaper Background - positioned in front and fades out */}
       <div 
-        className={`fixed inset-0 bg-cover bg-center bg-no-repeat scale-100 transition-all duration-[4500ms] ease-in-out ${isDarkMode ? 'opacity-0' : 'opacity-100'}`}
+        className={`fixed inset-0 bg-cover bg-center bg-no-repeat scale-100 transition-all duration-[10000ms] ease-in-out ${isDarkMode ? 'opacity-0' : 'opacity-100'}`}
         style={{ 
           backgroundImage: 'url("/Windows Xp Bliss Wallpaper HD.jpg")',
           transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
