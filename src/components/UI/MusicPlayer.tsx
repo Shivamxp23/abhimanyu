@@ -14,7 +14,6 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
   const [songHistory, setSongHistory] = useState<string[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
-  const [songHistory, setSongHistory] = useState<string[]>([]);
 
   const songs = [
     "Jhol.mp3",
@@ -105,7 +104,9 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlay, onPause }) => {
     }
     
     // Update position
-    audioRef.current.currentTime = pos * audioRef.current.duration;
+    const newTime = pos * audioRef.current.duration;
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
     
     // Resume if it was playing
     if (wasPlaying) {
