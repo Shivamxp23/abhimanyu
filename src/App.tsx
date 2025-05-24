@@ -27,6 +27,8 @@ function App() {
   const [isIlluminationBroken, setIsIlluminationBroken] = useState(false);
   const [hasShownStartNotification, setHasShownStartNotification] = useState(false);
   const [showRain, setShowRain] = useState(false);
+  const [isRainFading, setIsRainFading] = useState(false);
+  const [isRainActive, setIsRainActive] = useState(false);
   const [hasShownAudioNotification, setHasShownAudioNotification] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -201,6 +203,50 @@ function App() {
     return () => window.removeEventListener('puzzleComplete', handlePuzzleComplete as EventListener);
   }, []);
 
+  // Function to handle rain toggle with fade
+  const handleRainToggle = () => {
+    if (isRainActive) {
+      // Start fade out
+      setIsRainFading(true);
+      setIsRainActive(false); // Toggle button state immediately
+      if (audioRef.current) {
+        // Fade out audio over 9 seconds
+        const fadeOutDuration = 9000; // 9 seconds in milliseconds
+        const startVolume = audioRef.current.volume;
+        const startTime = Date.now();
+        
+        const fadeOutInterval = setInterval(() => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / fadeOutDuration, 1);
+          
+          if (audioRef.current) {
+            audioRef.current.volume = startVolume * (1 - progress);
+          }
+          
+          if (progress === 1) {
+            clearInterval(fadeOutInterval);
+            setShowRain(false);
+            setIsRainFading(false);
+            if (audioRef.current) {
+              audioRef.current.pause();
+              audioRef.current.volume = 0.3; // Reset volume for next time
+            }
+          }
+        }, 50); // Update every 50ms for smooth fade
+      } else {
+        setShowRain(false);
+        setIsRainFading(false);
+      }
+    } else {
+      setShowRain(true);
+      setIsRainActive(true); // Toggle button state immediately
+      if (audioRef.current) {
+        audioRef.current.volume = 0.3;
+        audioRef.current.play();
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Night Wallpaper Background - positioned behind */}
@@ -222,7 +268,11 @@ function App() {
       />
 
       {/* Rain Effect */}
-      {showRain && <RainEffect />}
+      {showRain && (
+        <div className={`transition-opacity duration-[9000ms] ${isRainFading ? 'opacity-0' : 'opacity-100'}`}>
+          <RainEffect />
+        </div>
+      )}
 
       <div className="relative min-h-screen flex flex-col items-center justify-center p-4">
         {/* Desktop Icons */}
@@ -276,15 +326,15 @@ function App() {
             
             {isGameStarted && (
               <button
-                onClick={() => setShowRain(!showRain)}
+                onClick={handleRainToggle}
                 className={`px-2 py-0.5 text-xs font-bold border-solid border-[1px] flex items-center gap-1 ${
-                  showRain 
+                  isRainActive 
                     ? 'bg-[#000080] text-white border-t-[#1084d0] border-l-[#1084d0] border-r-[#000040] border-b-[#000040]' 
                     : 'bg-[#c0c0c0] text-black border-t-[#ffffff] border-l-[#ffffff] border-r-[#808080] border-b-[#808080]'
                 }`}
               >
                 <span className="text-[10px]">🌧️</span>
-                {showRain ? 'Rain On' : 'Rain Off'}
+                {isRainActive ? 'Rain On' : 'Rain Off'}
               </button>
             )}
           </div>
